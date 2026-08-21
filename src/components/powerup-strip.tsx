@@ -60,9 +60,9 @@ export function PowerupStrip({
           ))}
         </span>
 
-        <span className="flex items-center gap-[6px] text-[12px] text-ink-soft">
+        <span className="flex w-full items-center justify-center gap-[6px] text-[12px] text-ink-soft">
           <span className="underline decoration-dotted underline-offset-2">
-            {open ? "Hide" : "Buy an edge, not just a rank"}
+            {open ? "Hide" : "Add one to your bid and hold the seat longer"}
           </span>
           <svg
             width="10"
