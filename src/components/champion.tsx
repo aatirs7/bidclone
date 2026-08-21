@@ -29,7 +29,7 @@ export function Champion({
       : null;
 
   return (
-    <section className="seat-glow relative overflow-hidden rounded-2xl border border-gain/30 bg-gradient-to-br from-gain-wash via-panel to-panel shadow-[0_1px_2px_rgba(21,23,26,0.04),0_12px_32px_-12px_rgba(11,122,75,0.18)]">
+    <section className="seat-glow relative overflow-hidden rounded-2xl border border-gain/30 bg-gradient-to-br from-gain-wash via-panel to-panel lift">
       <span aria-hidden="true" className="seat-sheen" />
       {/* A wash of the entry's own color. The chrome stays disciplined and the
           brand supplies the only real color on the page. */}
@@ -38,16 +38,27 @@ export function Champion({
         className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-[0.13] blur-2xl"
         style={{ background: brandGradient(row.url) }}
       />
+      <span
+        aria-hidden="true"
+        className="num pointer-events-none absolute -bottom-10 -left-3 select-none text-[120px] font-semibold leading-none tracking-[-0.06em] text-gain opacity-[0.06] sm:-bottom-14 sm:left-2 sm:text-[176px]"
+      >
+        01
+      </span>
 
       <div className="relative flex flex-col items-center gap-4 p-5 text-center sm:gap-6 sm:p-8 md:flex-row md:items-center md:gap-9 md:text-left">
         <BrandMark row={row} />
 
         <div className="min-w-0 flex-1">
-          <div className="mb-2 flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gain md:justify-start">
-            <span className="relative flex h-[6px] w-[6px] rounded-full bg-gain">
-              <span className="pulse-ring absolute -inset-[3px] rounded-full bg-gain opacity-25" />
+          <div className="mb-3 flex items-center justify-center gap-[10px] md:justify-start">
+            <span className="num flex h-7 items-center rounded-full bg-gain px-[10px] text-[12px] font-semibold tracking-[0.02em] text-white">
+              01
             </span>
-            Holds the seat
+            <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gain">
+              <span className="relative flex h-[5px] w-[5px] rounded-full bg-gain">
+                <span className="pulse-ring absolute -inset-[3px] rounded-full bg-gain opacity-25" />
+              </span>
+              Holds the seat
+            </span>
           </div>
 
           <h2 className="text-[clamp(26px,7vw,48px)] font-semibold leading-[1.03] tracking-[-0.04em]">
@@ -98,13 +109,13 @@ export function Champion({
           </dl>
         </div>
 
-        <div className="w-full flex-none md:w-auto md:self-end">
+        <div className="flex w-full flex-none flex-col items-center md:w-auto md:self-end">
           <button
             type="button"
             onClick={() => onTake(cost)}
             className="w-full whitespace-nowrap rounded-lg bg-ink px-6 py-3 text-[14px] font-semibold text-ground transition-colors hover:bg-gain md:w-auto"
           >
-            Take the seat, {formatCents(cost)}
+            Take the top seat, {formatCents(cost)}
           </button>
           <p className="mt-2 text-center text-[11.5px] text-ink-faint md:text-right">
             Or join the board from $1

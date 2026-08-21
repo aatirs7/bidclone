@@ -16,21 +16,28 @@ import { Money } from "./money";
 export function BoardEntry({
   row,
   position,
+  index,
   onTake,
   dethroned,
 }: {
   row: BoardRow;
   position: number;
+  /** Position in the rendered list, used only to stagger the load. */
+  index: number;
   onTake: (cents: number) => void;
   dethroned: boolean;
 }) {
   const cost = costToPass(row.totalCents);
+  // The chasers immediately behind the seat get a little more room, so the
+  // board tapers rather than stopping dead after the showcase.
+  const near = position <= 3;
 
   return (
     <article
-      className={`group relative mb-[10px] flex items-center gap-3 rounded-xl border border-rule bg-panel p-3 transition-colors hover:border-ink/25 sm:gap-4 sm:p-4 ${
-        dethroned ? "row-dethroned" : ""
-      }`}
+      style={{ animationDelay: `${Math.min(index, 12) * 28}ms` }}
+      className={`deal-in row-accent lift group relative mb-[10px] flex items-center gap-3 overflow-hidden rounded-xl border border-rule bg-panel transition-colors hover:border-ink/25 sm:gap-4 ${
+        near ? "p-[14px] sm:p-[18px]" : "p-3 sm:p-4"
+      } ${dethroned ? "row-dethroned" : ""}`}
     >
       <span className="num flex h-8 w-8 flex-none items-center justify-center rounded-full border border-rule text-[12px] font-semibold text-ink-faint sm:h-9 sm:w-9 sm:text-[13px]">
         {String(position).padStart(2, "0")}
@@ -66,14 +73,14 @@ export function BoardEntry({
         </div>
       </div>
 
-      <div className="flex flex-none flex-col items-end gap-[6px]">
-        <div className="num text-[18px] font-semibold tracking-[-0.025em] sm:text-[20px]">
+      <div className="flex flex-none flex-col items-center gap-[6px]">
+        <div className="num text-center text-[18px] font-semibold tracking-[-0.025em] sm:text-[20px]">
           <Money cents={row.totalCents} />
         </div>
         <button
           type="button"
           onClick={() => onTake(cost)}
-          className="whitespace-nowrap rounded-full border border-rule px-3 py-[5px] text-[12px] font-medium text-ink-soft transition-colors hover:border-ink hover:bg-ink hover:text-ground"
+          className="whitespace-nowrap rounded-full border border-rule px-3 py-[5px] text-[12px] font-medium text-ink-soft transition-all hover:border-ink hover:bg-ink hover:text-ground active:scale-[0.97]"
         >
           Take for {formatCents(cost)}
         </button>

@@ -228,7 +228,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
               onClick={() => takeSpot(board.seatPriceCents)}
               className="w-full bg-ink px-7 py-3 text-[14.5px] font-semibold tracking-[-0.01em] text-ground transition-colors hover:bg-gain sm:w-auto"
             >
-              Take the seat, {formatCents(board.seatPriceCents)}
+              Take the top seat, {formatCents(board.seatPriceCents)}
             </button>
             <button
               type="button"
@@ -243,14 +243,17 @@ export function LiveBoard({ initial }: { initial: Board }) {
         <PowerupStrip />
 
         <section id="board" className="scroll-mt-20 pt-6">
-          <div className="mb-2 flex items-baseline justify-between">
-            <h2 className="text-[16px] font-semibold tracking-[-0.02em]">
-              The board
+          <div className="mb-4 text-center">
+            <h2 className="ledger-heading text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
+              <span className="whitespace-nowrap">The board</span>
             </h2>
-            <span className="num text-[12.5px] text-ink-faint">
-              {formatCount(board.stats.entryCount)}{" "}
-              {board.stats.entryCount === 1 ? "entry" : "entries"}
-            </span>
+            <div className="mt-2 text-[16px] font-semibold tracking-[-0.02em]">
+              Everyone chasing the seat
+              <span className="ml-2 font-normal text-ink-faint">
+                <span className="num">{formatCount(board.stats.entryCount)}</span>{" "}
+                {board.stats.entryCount === 1 ? "entry" : "entries"}
+              </span>
+            </div>
           </div>
 
           {chasers.length === 0 ? (
@@ -266,6 +269,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
                   key={row.id}
                   row={row}
                   position={index + 2}
+                  index={index}
                   onTake={takeSpot}
                   dethroned={dropped.has(row.id)}
                 />
@@ -327,13 +331,13 @@ export function LiveBoard({ initial }: { initial: Board }) {
         </section>
 
         <section id="reigns" className="mt-10 scroll-mt-20">
-          <div className="mb-3 flex items-baseline justify-between gap-4">
-            <h2 className="text-[15px] font-semibold tracking-[-0.01em]">
-              Longest reigns
+          <div className="mb-4 text-center">
+            <h2 className="ledger-heading text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
+              <span className="whitespace-nowrap">Longest reigns</span>
             </h2>
-            <span className="text-right text-[12.5px] text-ink-faint">
+            <div className="mt-2 text-[13px] text-ink-soft">
               The one board you cannot buy outright
-            </span>
+            </div>
           </div>
           <div className="border-t border-ink/15 pt-1">
             <ul>
