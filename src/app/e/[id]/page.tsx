@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const data = await load(id).catch(() => null);
   if (!data) return { title: "Entry" };
   return {
-    title: `${data.entry.displayName} on dethrone.lol`,
+    title: `${data.entry.displayName} on cheapseat.lol`,
     description: `Rank #${data.rank}. ${formatCents(data.entry.totalCents)} paid, ${formatCount(data.entry.clickCount)} clicks.`,
   };
 }

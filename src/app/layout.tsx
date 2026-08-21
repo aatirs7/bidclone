@@ -21,11 +21,11 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl()),
-  title: "dethrone.lol",
+  title: "cheapseat.lol",
   description:
     "There is always someone at #1. Every bid stays on your name, every click is public, and the seat has a clock on it.",
   openGraph: {
-    title: "dethrone.lol",
+    title: "cheapseat.lol",
     description:
       "The seat is bought, not earned. Every bid stays on your name and the top spot has a clock on it.",
     type: "website",

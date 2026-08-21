@@ -1,4 +1,4 @@
-# dethrone.lol
+# cheapseat.lol
 
 A public leaderboard where the top spot is bought outright. Bids stack, clicks
 are public, and first place has a clock on it.
@@ -48,7 +48,7 @@ Production endpoint, from the terminal:
 
 ```bash
 stripe webhook_endpoints create \
-  --url https://dethrone.lol/api/stripe/webhook \
+  --url https://cheapseat.lol/api/stripe/webhook \
   --enabled-events checkout.session.completed
 ```
 

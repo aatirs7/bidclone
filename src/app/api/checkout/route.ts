@@ -68,13 +68,13 @@ export async function POST(req: Request) {
             product_data: {
               name: `Rank bid: ${normalized}`,
               description:
-                "Placement on dethrone.lol. No refunds. You are buying a position on the page and nothing else.",
+                "Placement on cheapseat.lol. No refunds. You are buying a position on the page and nothing else.",
             },
           },
         },
       ],
       metadata: { url: normalized, amount_cents: String(amount) },
-      payment_intent_data: { statement_descriptor_suffix: "DETHRONE" },
+      payment_intent_data: { statement_descriptor_suffix: "CHEAPSEAT" },
       success_url: `${appUrl()}/?bid=success`,
       cancel_url: `${appUrl()}/`,
     }, { idempotencyKey: randomUUID() });

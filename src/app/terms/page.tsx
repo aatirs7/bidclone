@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
-  const contact = process.env.NEXT_PUBLIC_REPORT_EMAIL ?? "reports@dethrone.lol";
+  const contact = process.env.NEXT_PUBLIC_REPORT_EMAIL ?? "reports@cheapseat.lol";
 
   return (
     <>

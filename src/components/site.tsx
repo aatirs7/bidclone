@@ -10,7 +10,7 @@ export function Masthead() {
             <i className="block h-[2px] w-[65%] rounded-[1px] bg-ground" />
             <i className="block h-[2px] w-[35%] rounded-[1px] bg-ground" />
           </span>
-          dethrone<span className="font-normal text-ink-faint">.lol</span>
+          cheapseat<span className="font-normal text-ink-faint">.lol</span>
         </Link>
         <nav className="flex gap-[22px] text-sm">
           <Link href="/#board" className="text-ink-soft transition-colors hover:text-ink">
@@ -29,7 +29,7 @@ export function Masthead() {
 }
 
 export function Footer() {
-  const report = process.env.NEXT_PUBLIC_REPORT_EMAIL ?? "reports@dethrone.lol";
+  const report = process.env.NEXT_PUBLIC_REPORT_EMAIL ?? "reports@cheapseat.lol";
   return (
     <footer className="mt-14 border-t border-rule py-[26px] pb-11 text-center text-[12.5px] text-ink-faint">
       <div className="mx-auto max-w-[940px] px-5">
@@ -40,7 +40,7 @@ export function Footer() {
           Terms
         </Link>
         <a
-          href={`mailto:${report}?subject=${encodeURIComponent("Report an entry on dethrone.lol")}`}
+          href={`mailto:${report}?subject=${encodeURIComponent("Report an entry on cheapseat.lol")}`}
           className="mx-[9px] text-ink-soft no-underline hover:text-ink"
         >
           Report an entry

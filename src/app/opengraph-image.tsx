@@ -5,7 +5,7 @@ import { formatCents, formatCount } from "@/lib/money";
 import { formatDuration } from "@/lib/time";
 
 export const runtime = "nodejs";
-export const alt = "dethrone.lol";
+export const alt = "cheapseat.lol";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 // Every share becomes an ad for the current state of the board, without
@@ -54,7 +54,7 @@ export default async function Image() {
             color: INK_SOFT,
           }}
         >
-          <span style={{ color: INK, fontWeight: 700 }}>dethrone.lol</span>
+          <span style={{ color: INK, fontWeight: 700 }}>cheapseat.lol</span>
           <span>The seat is bought, not earned</span>
         </div>
 

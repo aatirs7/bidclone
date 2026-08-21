@@ -9,7 +9,7 @@ export type FetchedMetadata = {
 const TIMEOUT_MS = 3_000;
 const MAX_BYTES = 100_000; // og tags live in <head>; we never need more than this.
 const UA =
-  "Mozilla/5.0 (compatible; dethrone.lol/1.0; +https://dethrone.lol)";
+  "Mozilla/5.0 (compatible; cheapseat.lol/1.0; +https://cheapseat.lol)";
 
 function decode(value: string): string {
   return value
