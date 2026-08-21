@@ -4,8 +4,7 @@ import { ImageResponse } from "next/og";
 
 import { brandGradient } from "@/lib/brand";
 import { getBoardSafe, type BoardRow } from "@/lib/leaderboard";
-import { formatCents, formatCount } from "@/lib/money";
-import { formatDuration } from "@/lib/time";
+import { formatCents } from "@/lib/money";
 
 export const runtime = "nodejs";
 export const alt = "cheapseat.lol";
@@ -22,9 +21,7 @@ const PANEL = "#F6F7F4";
 const INK = "#15171A";
 const INK_SOFT = "#5A6068";
 const INK_FAINT = "#9AA0A6";
-const RULE = "#CBCEC7";
 const GAIN = "#0B7A4B";
-const GAIN_WASH = "#DFEAE4";
 
 function font(file: string) {
   return readFile(path.join(process.cwd(), "src/assets/fonts", file));
@@ -63,12 +60,6 @@ export default async function Image() {
     leader ? markDataUri(leader) : Promise.resolve(null),
   ]);
 
-  const held = leader?.reignStartedAt
-    ? formatDuration(
-        (Date.now() - new Date(leader.reignStartedAt).getTime()) / 1000,
-      )
-    : null;
-
   return new ImageResponse(
     (
       <div
@@ -77,26 +68,46 @@ export default async function Image() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
           background: GROUND,
           color: INK,
-          padding: "36px 46px",
+          padding: "40px 56px",
           fontFamily: "Instrument Sans",
         }}
       >
         <div
+          style={{ display: "flex", alignItems: "baseline", fontSize: 24 }}
+        >
+          <span style={{ fontWeight: 600 }}>cheapseat</span>
+          <span style={{ color: INK_FAINT }}>.lol</span>
+        </div>
+
+        {/* The card renders small in a feed, so one number has to carry it. */}
+        <div
           style={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            fontSize: 21,
+            marginTop: 22,
+            fontSize: 26,
+            letterSpacing: 3,
+            fontWeight: 600,
             color: INK_SOFT,
           }}
         >
-          <span style={{ display: "flex", alignItems: "baseline", color: INK }}>
-            <span style={{ fontWeight: 600 }}>cheapseat</span>
-            <span style={{ color: INK_FAINT }}>.lol</span>
-          </span>
-          <span>Take it from them. Seats from $1.</span>
+          TAKE THE TOP SEAT FOR
+        </div>
+        <div
+          style={{
+            display: "flex",
+            fontFamily: "IBM Plex Mono",
+            fontSize: 132,
+            lineHeight: 1,
+            letterSpacing: "-0.05em",
+            color: GAIN,
+            marginTop: 6,
+          }}
+        >
+          {formatCents(board.seatPriceCents)}
         </div>
 
         {leader ? (
@@ -104,12 +115,12 @@ export default async function Image() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 24,
-              marginTop: 24,
-              padding: "24px 28px",
+              gap: 18,
+              marginTop: 26,
+              padding: "14px 28px",
               background: PANEL,
               border: `2px solid ${GAIN}`,
-              borderRadius: 20,
+              borderRadius: 999,
             }}
           >
             {mark ? (
@@ -117,9 +128,9 @@ export default async function Image() {
               <img
                 src={mark}
                 alt=""
-                width={100}
-                height={100}
-                style={{ borderRadius: 18, objectFit: "cover" }}
+                width={46}
+                height={46}
+                style={{ borderRadius: 12, objectFit: "cover" }}
               />
             ) : (
               <div
@@ -127,176 +138,92 @@ export default async function Image() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 100,
-                  height: 100,
-                  borderRadius: 18,
+                  width: 46,
+                  height: 46,
+                  borderRadius: 12,
                   background: brandGradient(leader.url),
                   color: "#FFFFFF",
-                  fontSize: 44,
+                  fontSize: 22,
                   fontWeight: 600,
                 }}
               >
                 {leader.displayName.replace(/^@/, "").charAt(0).toUpperCase()}
               </div>
             )}
-
-            <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span
-                  style={{
-                    display: "flex",
-                    padding: "2px 11px",
-                    borderRadius: 999,
-                    background: GAIN,
-                    color: "#FFFFFF",
-                    fontFamily: "IBM Plex Mono",
-                    fontSize: 17,
-                  }}
-                >
-                  01
-                </span>
-                <span
-                  style={{
-                    fontSize: 15,
-                    letterSpacing: 2,
-                    color: GAIN,
-                    fontWeight: 600,
-                  }}
-                >
-                  HOLDS THE SEAT
-                </span>
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 48,
-                  fontWeight: 600,
-                  letterSpacing: "-0.03em",
-                  marginTop: 6,
-                }}
-              >
-                {leader.displayName.slice(0, 24)}
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: 20,
-                  marginTop: 8,
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: "IBM Plex Mono",
-                    fontSize: 50,
-                    color: GAIN,
-                    letterSpacing: "-0.03em",
-                  }}
-                >
-                  {formatCents(leader.totalCents)}
-                </span>
-                <span style={{ fontSize: 20, color: INK_SOFT }}>
-                  {formatCount(leader.clickCount)} clicks
-                </span>
-                {held ? (
-                  <span style={{ fontSize: 20, color: INK_SOFT }}>
-                    holding {held}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-
-            <div
+            <span style={{ display: "flex", fontSize: 30, fontWeight: 600 }}>
+              {leader.displayName.slice(0, 22)}
+            </span>
+            <span style={{ display: "flex", fontSize: 26, color: INK_FAINT }}>
+              holds it at
+            </span>
+            <span
               style={{
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                padding: "13px 20px",
-                borderRadius: 14,
-                background: GAIN_WASH,
-                border: `1px solid ${GAIN}`,
+                fontFamily: "IBM Plex Mono",
+                fontSize: 32,
+                color: GAIN,
               }}
             >
-              <span
-                style={{ fontSize: 13, letterSpacing: 1.6, color: INK_SOFT }}
-              >
-                TAKE IT FOR
-              </span>
-              <span
-                style={{
-                  fontFamily: "IBM Plex Mono",
-                  fontSize: 32,
-                  color: GAIN,
-                  marginTop: 2,
-                }}
-              >
-                {formatCents(board.seatPriceCents)}
-              </span>
-            </div>
+              {formatCents(leader.totalCents)}
+            </span>
           </div>
         ) : (
-          <div
-            style={{
-              display: "flex",
-              marginTop: 56,
-              fontSize: 56,
-              fontWeight: 600,
-              letterSpacing: "-0.03em",
-            }}
-          >
-            The seat is empty. Be number one here for $1.
+          <div style={{ display: "flex", marginTop: 26, fontSize: 30 }}>
+            The seat is empty. Nobody has paid anything yet.
           </div>
         )}
 
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            marginTop: 16,
+            marginTop: 22,
+            padding: "13px 34px",
+            borderRadius: 999,
+            background: INK,
+            color: GROUND,
+            fontSize: 25,
+            fontWeight: 600,
           }}
         >
-          {chasers.map((row, i) => (
-            <div
-              key={row.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                fontSize: 23,
-                color: INK_SOFT,
-                borderBottom: `1px solid ${RULE}`,
-                padding: "8px 4px",
-              }}
-            >
-              <span style={{ display: "flex", gap: 14 }}>
-                <span style={{ fontFamily: "IBM Plex Mono", color: INK_FAINT }}>
-                  {String(i + 2).padStart(2, "0")}
-                </span>
-                <span>{row.displayName.slice(0, 30)}</span>
-              </span>
-              <span style={{ fontFamily: "IBM Plex Mono", color: INK }}>
-                {formatCents(row.totalCents)}
-              </span>
-            </div>
-          ))}
+          Take it from them
         </div>
-
-        <div style={{ display: "flex", flex: 1 }} />
 
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            fontSize: 20,
+            gap: 34,
+            marginTop: 22,
+            fontSize: 25,
             color: INK_SOFT,
           }}
         >
-          <span>New seats start at $1. Every bid stays on your name.</span>
-          <span style={{ fontFamily: "IBM Plex Mono", color: INK }}>
-            {formatCents(board.stats.paidToDateCents)} paid to date
-          </span>
+          {chasers.map((row, i) => (
+            <span key={row.id} style={{ display: "flex", gap: 9 }}>
+              <span style={{ fontFamily: "IBM Plex Mono", color: INK_FAINT }}>
+                {String(i + 2).padStart(2, "0")}
+              </span>
+              <span>{row.displayName.slice(0, 18)}</span>
+              <span style={{ fontFamily: "IBM Plex Mono", color: INK }}>
+                {formatCents(row.totalCents)}
+              </span>
+            </span>
+          ))}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            marginTop: 30,
+            fontSize: 23,
+            color: INK_FAINT,
+          }}
+        >
+          <span>New seats start at $1</span>
+          <span>&middot;</span>
+          <span>Bids stack</span>
+          <span>&middot;</span>
+          <span>Clicks are public</span>
         </div>
       </div>
     ),
