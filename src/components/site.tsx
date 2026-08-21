@@ -36,7 +36,6 @@ export function Masthead() {
             <WallNote />
           </span>
           <ThemeToggle />
-          <WallNote />
         </nav>
       </div>
     </header>
