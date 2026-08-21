@@ -12,6 +12,7 @@ import {
 } from "@/lib/money";
 import { formatAgo, formatDuration } from "@/lib/time";
 import { normalizeUrl } from "@/lib/normalize-url";
+import { ordinal } from "@/lib/ordinal";
 import { Champion } from "./champion";
 import { PowerupStrip } from "./powerup-strip";
 import { BoardEntry } from "./row";
@@ -183,6 +184,18 @@ export function LiveBoard({ initial }: { initial: Board }) {
   }
 
   /**
+   * Which seat this amount buys for somebody not yet on the board. The
+   * headline names it, so lowering the bid tells you what you are settling
+   * for rather than leaving you to work it out.
+   */
+  const seatForAmount = useMemo(() => {
+    let ahead = 0;
+    // A tie leaves the incumbent in place, so an equal total sits behind.
+    for (const row of board.rows) if (row.totalCents >= amount) ahead += 1;
+    return ahead + 1;
+  }, [amount, board.rows]);
+
+  /**
    * What this bid actually buys, worked out on the client from the same rules
    * the server uses. Bids stack, and a tie leaves the incumbent in place, so
    * an equal total sits behind rather than level.
@@ -220,7 +233,11 @@ export function LiveBoard({ initial }: { initial: Board }) {
 
       <section className="pt-5 text-center sm:pt-6">
         <h1 className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[clamp(24px,3.6vw,34px)] font-semibold tracking-[-0.035em]">
-          <span>Take the top seat for</span>
+          <span>
+            {seatForAmount === 1
+              ? "Take the top seat for"
+              : `Take the ${ordinal(seatForAmount)} seat for`}
+          </span>
           <span className="flex items-center gap-2 sm:gap-3">
             <Stepper label="Lower amount" onClick={() => step(-1)}>
               &minus;
@@ -243,7 +260,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
                 type="text"
                 inputMode="numeric"
                 aria-label="Bid amount in dollars"
-                className="num border-0 bg-transparent p-0 text-left font-semibold tracking-[-0.04em] text-gain outline-none"
+                className="field-input num border-0 bg-transparent p-0 text-left font-semibold tracking-[-0.04em] text-gain outline-none"
                 style={{ width: `${Math.max(1, dollars.length)}ch` }}
               />
             </span>
@@ -263,7 +280,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
           onSubmit={submit}
           className="mx-auto mt-4 flex max-w-[620px] flex-col gap-[10px] sm:flex-row"
         >
-          <label className="flex h-[48px] flex-1 items-center gap-[10px] rounded-full border border-rule bg-panel px-5 transition-colors focus-within:border-ink">
+          <label className="flex h-[48px] flex-1 items-center gap-[10px] rounded-full border border-rule bg-panel px-5 transition-colors focus-within:border-ink focus-within:ring-2 focus-within:ring-gain/40">
             <svg
               width="15"
               height="15"
@@ -286,7 +303,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
               autoComplete="url"
               aria-label="Your product URL or handle"
               placeholder="Your product URL or @handle"
-              className="h-full w-full border-0 bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-faint"
+              className="field-input h-full w-full border-0 bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-faint"
             />
           </label>
           <button

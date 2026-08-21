@@ -81,6 +81,13 @@ a:focus-visible,
 input:focus-visible {
   outline: 2px solid var(--color-gain);
   outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* Inputs that sit inside a styled wrapper let the wrapper show the focus, so
+   a square outline is never drawn inside a pill. */
+.field-input:focus-visible {
+  outline: none;
 }
 
 /* The one orchestrated moment: a displaced row slides down past the new

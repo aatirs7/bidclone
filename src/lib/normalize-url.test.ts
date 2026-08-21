@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { isBlocked } from "./blocklist";
-import { normalizeUrl } from "./normalize-url";
+import { displayNameFor, normalizeUrl } from "./normalize-url";
 import { costToPass } from "./money";
 
 test("collides the forms people actually paste", () => {
@@ -58,11 +58,18 @@ test("blocklist matches domains, subdomains and substrings", () => {
   assert.equal(isBlocked("notpornbutsafe.com"), true);
 });
 
-test("cost to pass rounds up to a whole dollar and respects the ceiling", () => {
+test("cost to pass rounds up to a whole dollar", () => {
   assert.equal(costToPass(0), 100);
   assert.equal(costToPass(100), 200);
   assert.equal(costToPass(4700), 4800);
   assert.equal(costToPass(4701), 4800);
-  // Clamped to the per transaction maximum.
-  assert.equal(costToPass(100_000), 100_000);
+  // Reports the true price even above the per payment cap. Clamping here would
+  // post $1,000 next to a leader sitting on $8,412.
+  assert.equal(costToPass(841_200), 841_300);
+});
+
+test("an entry is labelled by its identity, not its title", () => {
+  assert.equal(displayNameFor("foo.com"), "foo.com");
+  assert.equal(displayNameFor("x.com/levelsio"), "@levelsio");
+  assert.equal(displayNameFor("foo.com/bar"), "foo.com/bar");
 });
