@@ -96,7 +96,7 @@ export default async function Image() {
             <span style={{ fontWeight: 600 }}>cheapseat</span>
             <span style={{ color: INK_FAINT }}>.lol</span>
           </span>
-          <span>The seat is bought, not earned</span>
+          <span>Take it from them. Seats from $1.</span>
         </div>
 
         {leader ? (

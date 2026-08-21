@@ -32,11 +32,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(appUrl()),
   title: "cheapseat.lol",
   description:
-    "There is always someone at #1. Every bid stays on your name, every click is public, and the seat has a clock on it.",
+    "The top seat is up for grabs and it is cheap. Bids stack, clicks are public, and the seat has a clock on it. New seats start at $1.",
   openGraph: {
     title: "cheapseat.lol",
     description:
-      "The seat is bought, not earned. Every bid stays on your name and the top spot has a clock on it.",
+      "Take the top seat from whoever is sitting in it. New seats start at $1, bids stack, and the clock starts the moment you land.",
     type: "website",
   },
   twitter: { card: "summary_large_image" },
