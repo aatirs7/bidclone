@@ -4,7 +4,7 @@ import { ImageResponse } from "next/og";
 
 import { brandGradient } from "@/lib/brand";
 import { getBoardSafe, type BoardRow } from "@/lib/leaderboard";
-import { formatCents } from "@/lib/money";
+import { MIN_BID_CENTS, formatCents } from "@/lib/money";
 
 export const runtime = "nodejs";
 export const alt = "cheapseat.lol";
@@ -94,7 +94,7 @@ export default async function Image() {
             color: INK_SOFT,
           }}
         >
-          TAKE THE TOP SEAT FOR
+          GET ON THE BOARD FROM
         </div>
         <div
           style={{
@@ -107,7 +107,7 @@ export default async function Image() {
             marginTop: 6,
           }}
         >
-          {formatCents(board.seatPriceCents)}
+          {formatCents(MIN_BID_CENTS)}
         </div>
 
         {leader ? (
@@ -185,7 +185,7 @@ export default async function Image() {
             fontWeight: 600,
           }}
         >
-          Take it from them
+          {`Take the top seat for ${formatCents(board.seatPriceCents)}`}
         </div>
 
         <div
