@@ -10,8 +10,20 @@ import { formatCents } from "@/lib/money";
  * centered line closed, the full catalog when opened. The only place on the
  * page that is allowed to look tempting rather than institutional.
  */
-export function PowerupStrip() {
-  const [open, setOpen] = useState(false);
+export function PowerupStrip({
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  /** Supplied when something else on the page needs to open the menu. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+} = {}) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = controlledOpen ?? uncontrolledOpen;
+  const setOpen = (next: boolean) => {
+    setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
 
   return (
     <div className="relative mt-3 overflow-hidden rounded-xl border border-gain/25 bg-gradient-to-r from-gain-wash/70 via-panel to-gain-wash/70">
@@ -23,7 +35,7 @@ export function PowerupStrip() {
 
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(!open)}
         aria-expanded={open}
         className="relative flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 px-4 py-[9px] text-center"
       >

@@ -55,6 +55,26 @@ function icon(html: string, base: URL): string | null {
 }
 
 /**
+ * Most sites still serve /favicon.ico without declaring it. Verified rather
+ * than assumed, so a 404 page never ends up rendered as somebody's logo.
+ */
+async function defaultIcon(base: URL): Promise<string | null> {
+  const candidate = new URL("/favicon.ico", base).toString();
+  try {
+    const res = await fetch(candidate, {
+      method: "HEAD",
+      redirect: "follow",
+      signal: AbortSignal.timeout(1_500),
+    });
+    if (!res.ok) return null;
+    const type = res.headers.get("content-type") ?? "";
+    return type.startsWith("image/") ? candidate : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Runs inside the webhook, never on the client and never in the checkout path.
  * Everything here is best effort: a site that is slow, hostile, or offline
  * still gets an entry, it just gets the bare domain as its name.
@@ -63,10 +83,12 @@ export async function fetchMetadata(
   normalizedUrl: string,
 ): Promise<FetchedMetadata> {
   const domain = normalizedUrl.split("/")[0];
+  // No third party icon service. Its fallback is a generic globe, which reads
+  // worse than the generated letter mark the board renders when this is null.
   const fallback: FetchedMetadata = {
     displayName: domain,
     tagline: null,
-    faviconUrl: `https://www.google.com/s2/favicons?sz=64&domain=${domain}`,
+    faviconUrl: null,
   };
 
   try {
@@ -110,7 +132,8 @@ export async function fetchMetadata(
     return {
       displayName: title ? title.slice(0, 60) : domain,
       tagline: description ? description.slice(0, 90) : null,
-      faviconUrl: icon(html, new URL(res.url)) ?? fallback.faviconUrl,
+      faviconUrl:
+        icon(html, new URL(res.url)) ?? (await defaultIcon(new URL(res.url))),
     };
   } catch {
     return fallback;

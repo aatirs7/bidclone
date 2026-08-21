@@ -43,11 +43,11 @@ export function Champion({
         style={{ background: brandGradient(row.url) }}
       />
 
-      <div className="relative flex flex-col items-center gap-4 p-5 text-center sm:gap-6 sm:p-6 md:flex-row md:items-center md:gap-7 md:text-left">
+      <div className="relative flex flex-col items-center gap-4 p-5 text-center sm:gap-6 sm:p-6 md:flex-row md:items-center md:gap-7">
         <BrandMark row={row} />
 
         <div className="min-w-0 flex-1">
-          <div className="mb-2 flex items-center justify-center gap-[10px] md:justify-start">
+          <div className="mb-2 flex items-center justify-center gap-[10px]">
             <span className="num flex h-7 items-center rounded-full bg-gain px-[10px] text-[12px] font-semibold tracking-[0.02em] text-white">
               01
             </span>
@@ -71,12 +71,12 @@ export function Champion({
           </h2>
 
           {row.tagline ? (
-            <p className="mx-auto mt-[6px] line-clamp-2 max-w-[52ch] text-[13.5px] leading-[1.45] text-ink-soft md:mx-0">
+            <p className="mx-auto mt-[6px] line-clamp-2 max-w-[52ch] text-[13.5px] leading-[1.45] text-ink-soft">
               {row.tagline}
             </p>
           ) : null}
 
-          <dl className="mt-3 flex flex-wrap items-baseline justify-center gap-x-5 gap-y-2 text-[12.5px] text-ink-faint sm:gap-x-6 md:justify-start">
+          <dl className="mt-3 flex flex-wrap items-baseline justify-center gap-x-5 gap-y-2 text-[12.5px] text-ink-faint sm:gap-x-6">
             <Stat label="Paid">
               <span className="num text-[clamp(23px,3.8vw,30px)] font-semibold tracking-[-0.03em] text-gain">
                 <Money cents={row.totalCents} animate={animate} />
@@ -115,7 +115,7 @@ export function Champion({
           >
             Take the top seat, {formatCents(cost)}
           </button>
-          <p className="mt-2 text-center text-[11.5px] text-ink-faint md:text-right">
+          <p className="mt-2 text-center text-[11.5px] text-ink-faint">
             Or join the board from $1
           </p>
         </div>

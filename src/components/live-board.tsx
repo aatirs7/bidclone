@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { Board } from "@/lib/leaderboard";
 import {
@@ -11,6 +11,7 @@ import {
   formatCount,
 } from "@/lib/money";
 import { formatAgo, formatDuration } from "@/lib/time";
+import { normalizeUrl } from "@/lib/normalize-url";
 import { Champion } from "./champion";
 import { PowerupStrip } from "./powerup-strip";
 import { BoardEntry } from "./row";
@@ -53,6 +54,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
   const [error, setError] = useState<string | null>(null);
   const [dropped, setDropped] = useState<Set<string>>(new Set());
   const [leadChanged, setLeadChanged] = useState(false);
+  const [powerupsOpen, setPowerupsOpen] = useState(false);
 
   const urlRef = useRef<HTMLInputElement>(null);
   const positions = useRef(new Map<string, number>());
@@ -180,6 +182,33 @@ export function LiveBoard({ initial }: { initial: Board }) {
     }
   }
 
+  /**
+   * What this bid actually buys, worked out on the client from the same rules
+   * the server uses. Bids stack, and a tie leaves the incumbent in place, so
+   * an equal total sits behind rather than level.
+   */
+  const preview = useMemo(() => {
+    const normalized = normalizeUrl(url);
+    if (!normalized) return null;
+
+    const existingIndex = board.rows.findIndex((r) => r.url === normalized);
+    const existing = existingIndex >= 0 ? board.rows[existingIndex] : null;
+    const newTotal = (existing?.totalCents ?? 0) + amount;
+
+    let ahead = 0;
+    for (const row of board.rows) {
+      if (existing && row.id === existing.id) continue;
+      if (row.totalCents >= newTotal) ahead += 1;
+    }
+
+    return {
+      rank: ahead + 1,
+      newTotal,
+      currentRank: existing ? existingIndex + 1 : null,
+      name: existing?.displayName ?? normalized,
+    };
+  }, [url, amount, board.rows]);
+
   const leader = board.rows[0] ?? null;
   // Rank 01 lives in the showcase, so the board lists the challengers.
   const chasers = board.rows.slice(1);
@@ -275,6 +304,50 @@ export function LiveBoard({ initial }: { initial: Board }) {
           </p>
         ) : null}
 
+        {preview ? (
+          <div className="mx-auto mt-3 flex max-w-[620px] flex-col items-center gap-1 rounded-xl border border-gain/25 bg-gain-wash px-4 py-[10px] text-[13px]">
+            <p>
+              {preview.currentRank ? (
+                <>
+                  <b className="font-semibold">{preview.name}</b> is already at{" "}
+                  <span className="num">#{preview.currentRank}</span>. Adding{" "}
+                  <span className="num text-gain">{formatCents(amount)}</span>{" "}
+                  takes it to{" "}
+                  <span className="num font-semibold text-gain">
+                    #{preview.rank}
+                  </span>{" "}
+                  on{" "}
+                  <span className="num">{formatCents(preview.newTotal)}</span>{" "}
+                  total.
+                </>
+              ) : (
+                <>
+                  This puts you at{" "}
+                  <span className="num font-semibold text-gain">
+                    #{preview.rank}
+                  </span>{" "}
+                  of {formatCount(board.stats.entryCount + 1)}.
+                </>
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setPowerupsOpen(true);
+                // There are two strips, one per breakpoint. Scroll to whichever
+                // is actually rendered rather than to a duplicated id.
+                const visible = Array.from(
+                  document.querySelectorAll<HTMLElement>("[data-powerups]"),
+                ).find((el) => el.offsetParent !== null);
+                visible?.scrollIntoView({ block: "center", behavior: "smooth" });
+              }}
+              className="text-[12px] text-ink-soft underline decoration-dotted underline-offset-2 transition-colors hover:text-ink"
+            >
+              Want an edge as well? See power-ups
+            </button>
+          </div>
+        ) : null}
+
         <p className="mt-[10px] text-[12px] text-ink-faint">
           Already listed? Enter the same URL and your bids stack. One time
           payment, no refunds, and your name and icon come from your own site.
@@ -294,8 +367,8 @@ export function LiveBoard({ initial }: { initial: Board }) {
         </div>
       )}
 
-      <div className="hidden md:block">
-        <PowerupStrip />
+      <div data-powerups className="hidden scroll-mt-24 md:block">
+        <PowerupStrip open={powerupsOpen} onOpenChange={setPowerupsOpen} />
       </div>
 
       <section id="board" className="scroll-mt-20 pt-6">
@@ -340,8 +413,8 @@ export function LiveBoard({ initial }: { initial: Board }) {
         )}
       </section>
 
-      <div className="mt-8 md:hidden">
-        <PowerupStrip />
+      <div data-powerups className="mt-8 scroll-mt-24 md:hidden">
+        <PowerupStrip open={powerupsOpen} onOpenChange={setPowerupsOpen} />
       </div>
 
       <section className="mt-12 grid grid-cols-1 gap-x-10 gap-y-8 border-t border-rule pt-8 md:grid-cols-2">

@@ -65,7 +65,8 @@ async function seed() {
         url,
         displayName: name,
         tagline,
-        faviconUrl: `https://www.google.com/s2/favicons?sz=64&domain=${url.split("/")[0]}`,
+        // Left null so the generated letter mark renders, same as production.
+        faviconUrl: null,
         totalCents: total,
         clickCount,
         firstBidAt: firstBid,
