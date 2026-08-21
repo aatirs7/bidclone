@@ -11,7 +11,7 @@ export function PowerupBadges({
   kinds: string[];
   className?: string;
 }) {
-  const active = kinds.filter(isPowerupKind);
+  const active = (Array.isArray(kinds) ? kinds : []).filter(isPowerupKind);
   if (active.length === 0) return null;
 
   return (

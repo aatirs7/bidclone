@@ -108,7 +108,7 @@ const loadRows = ttlCache(5_000, async (): Promise<BoardRow[]> => {
         where p.entry_id = ${entries.id}
           and (p.expires_at is null or p.expires_at > now())
           and p.consumed_at is null
-      ), '{}')`,
+      ), '{}'::text[])`,
     })
     .from(entries)
     .where(and(eq(entries.status, "active"), gt(entries.totalCents, 0)))
