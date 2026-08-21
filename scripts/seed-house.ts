@@ -53,8 +53,7 @@ const HOUSE = [
   ],
   ["elysiumbuilds.dev", 250, 16, "https://elysiumbuilds.dev/apple-icon.png"],
   ["mentorreach.com", 150, 14, "https://mentorreach.com/icon.png"],
-  // No published icon, so the generated letter mark renders instead.
-  ["ultrase7en.com", 100, 7, null],
+  ["accshopp.com", 100, 7, "https://accshopp.com/favicon.ico"],
 ] as const;
 
 async function clear() {

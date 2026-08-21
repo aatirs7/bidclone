@@ -23,6 +23,17 @@ function decode(value: string): string {
     .trim();
 }
 
+/** Cuts at the last whole word inside the limit, never mid word. */
+function clip(value: string, limit: number): string {
+  if (value.length <= limit) return value;
+  const cut = value.slice(0, limit);
+  const lastSpace = cut.lastIndexOf(" ");
+  const trimmed = (lastSpace > limit * 0.6 ? cut.slice(0, lastSpace) : cut)
+    .replace(/[\s,.;:]+$/, "")
+    .trim();
+  return `${trimmed}…`;
+}
+
 function meta(html: string, property: string): string | null {
   // Attribute order varies wildly in the wild, so match either arrangement.
   const patterns = [
@@ -130,8 +141,8 @@ export async function fetchMetadata(
       meta(html, "og:description") ?? meta(html, "description");
 
     return {
-      displayName: title ? title.slice(0, 60) : domain,
-      tagline: description ? description.slice(0, 90) : null,
+      displayName: title ? clip(title, 60) : domain,
+      tagline: description ? clip(description, 90) : null,
       faviconUrl:
         icon(html, new URL(res.url)) ?? (await defaultIcon(new URL(res.url))),
     };
