@@ -27,7 +27,7 @@ export function PowerupStrip({
   };
 
   return (
-    <div className="relative mt-3 overflow-hidden rounded-xl border border-gain/25 bg-gradient-to-r from-gain-wash/70 via-panel to-gain-wash/70">
+    <div className="relative mt-3 overflow-hidden rounded-xl border border-rule bg-panel">
       <span
         aria-hidden="true"
         className="seat-sheen"
@@ -40,10 +40,7 @@ export function PowerupStrip({
         aria-expanded={open}
         className="relative flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 px-4 py-[9px] text-center"
       >
-        <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-gain">
-          <span className="relative flex h-[5px] w-[5px] rounded-full bg-gain">
-            <span className="pulse-ring absolute -inset-[3px] rounded-full bg-gain opacity-25" />
-          </span>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-faint">
           Power-ups
         </span>
 
@@ -52,9 +49,9 @@ export function PowerupStrip({
             <span
               key={p.kind}
               title={p.tease}
-              className="flex items-center gap-[6px] rounded-full border border-gain/25 bg-panel/70 px-[10px] py-[4px] text-[12.5px] font-medium text-ink transition-colors hover:border-gain/60"
+              className="flex items-center gap-[6px] rounded-full border border-rule px-[10px] py-[4px] text-[12.5px] font-medium text-ink transition-colors hover:border-ink/40"
             >
-              <PowerupIcon kind={p.kind} className="text-gain" />
+              <PowerupIcon kind={p.kind} className="text-ink-soft" />
               {p.name}
               <span className="num font-semibold text-gain">
                 {formatCents(p.priceCents)}
@@ -96,17 +93,17 @@ export function PowerupStrip({
         aria-hidden={!open}
       >
         <div className="overflow-hidden">
-          <div className="grid grid-cols-2 gap-2 border-t border-gain/20 p-3 sm:gap-3 sm:p-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 border-t border-rule p-3 sm:gap-3 sm:p-4 lg:grid-cols-4">
             {POWERUP_LIST.map((p) => (
               <div
                 key={p.kind}
-                className="group/card relative flex flex-col items-center overflow-hidden rounded-xl border border-gain/25 bg-panel px-3 py-4 text-center transition-all duration-200 hover:-translate-y-[2px] hover:border-gain/60"
+                className="group/card relative flex flex-col items-center overflow-hidden rounded-xl border border-rule bg-ground px-3 py-4 text-center transition-all duration-200 hover:-translate-y-[2px] hover:border-ink/30"
               >
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute -top-8 left-1/2 h-20 w-20 -translate-x-1/2 rounded-full bg-gain opacity-[0.07] blur-2xl transition-opacity duration-300 group-hover/card:opacity-[0.16]"
+                  className="pointer-events-none absolute -top-8 left-1/2 h-20 w-20 -translate-x-1/2 rounded-full bg-ink opacity-[0.05] blur-2xl transition-opacity duration-300 group-hover/card:opacity-[0.1]"
                 />
-                <span className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gain/30 bg-gain-wash text-gain transition-transform duration-200 group-hover/card:scale-110">
+                <span className="relative flex h-11 w-11 items-center justify-center rounded-full border border-rule bg-panel text-ink-soft transition-transform duration-200 group-hover/card:scale-110">
                   <PowerupIcon kind={p.kind} size={20} />
                 </span>
                 <h3 className="relative mt-3 text-[13.5px] font-semibold tracking-[-0.01em]">

@@ -286,7 +286,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
         </h1>
 
         <p className="mx-auto mt-3 max-w-[600px] text-[13.5px] leading-[1.45] text-ink-soft">
-          <b className="font-semibold text-gain">New seats start at $1.</b>{" "}
+          <b className="font-semibold text-ink">New seats start at $1.</b>{" "}
           Paying less than the leader still puts you on the board, at whatever
           seat that bid can take. Every bid stays on your name.
         </p>
@@ -337,11 +337,11 @@ export function LiveBoard({ initial }: { initial: Board }) {
         ) : null}
 
         {preview ? (
-          <div className="deal-in mx-auto mt-4 max-w-[620px] overflow-hidden rounded-2xl border border-gain/30 bg-gradient-to-br from-gain-wash via-panel to-gain-wash">
-            <div className="flex items-center gap-4 px-4 py-3 sm:px-5">
+          <div className="deal-in mx-auto mt-4 max-w-[620px] overflow-hidden rounded-2xl border border-rule bg-panel">
+            <div className="flex flex-col items-center gap-3 px-4 py-4 text-center sm:flex-row sm:justify-center sm:gap-4 sm:text-left">
               {/* The result, set as a result. A rank is a score, so it gets to
                   look like one. */}
-              <span className="num flex h-14 w-14 flex-none flex-col items-center justify-center rounded-xl border border-gain/35 bg-panel text-gain">
+              <span className="num flex h-14 w-14 flex-none flex-col items-center justify-center rounded-xl border border-gain/40 bg-gain-wash text-gain">
                 <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-faint">
                   Seat
                 </span>
@@ -350,7 +350,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
                 </span>
               </span>
 
-              <div className="min-w-0 flex-1 text-left">
+              <div className="min-w-0">
                 {preview.currentRank ? (
                   <>
                     <p className="text-[14px] font-semibold tracking-[-0.01em]">
@@ -404,9 +404,9 @@ export function LiveBoard({ initial }: { initial: Board }) {
                 ).find((el) => el.offsetParent !== null);
                 visible?.scrollIntoView({ block: "center", behavior: "smooth" });
               }}
-              className="flex w-full items-center justify-center gap-[6px] border-t border-gain/25 py-[9px] text-[12px] font-medium text-gain transition-colors hover:bg-gain-wash"
+              className="flex w-full items-center justify-center gap-[6px] border-t border-rule py-[9px] text-[12px] font-medium text-ink-soft transition-colors hover:bg-ground hover:text-ink"
             >
-              <PowerupIcon kind="seat_lock" size={13} />
+              <PowerupIcon kind="seat_lock" size={13} className="text-ink-faint" />
               Add a power-up and hold it longer
             </button>
           </div>

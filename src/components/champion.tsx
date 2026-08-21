@@ -30,7 +30,7 @@ export function Champion({
       : null;
 
   return (
-    <section className="seat-glow relative overflow-hidden rounded-2xl border border-gain/30 bg-gradient-to-br from-gain-wash via-panel to-panel lift">
+    <section className="seat-glow lift relative overflow-hidden rounded-2xl border border-rule bg-panel">
       <span
         aria-hidden="true"
         className="seat-sheen"

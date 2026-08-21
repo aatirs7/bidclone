@@ -56,7 +56,7 @@ function Plate({ entry, index }: { entry: WallEntry; index: number }) {
       href={`/e/${entry.id}`}
       style={{ animationDelay: `${Math.min(index, 20) * 30}ms` }}
       className={`deal-in lift group relative flex flex-col overflow-hidden rounded-xl border p-4 transition-transform duration-200 hover:-translate-y-[2px] ${
-        holding ? "seat-glow border-gain/40 bg-gain-wash" : "border-rule bg-panel"
+        holding ? "seat-glow border-gain/35 bg-panel" : "border-rule bg-panel"
       }`}
     >
       {/* The entry's own color, kept to a wash so the plate stays a plate. */}
@@ -80,31 +80,31 @@ function Plate({ entry, index }: { entry: WallEntry; index: number }) {
         ) : null}
       </div>
 
-      <div className="relative">
+      <div className="relative flex flex-col items-center text-center">
         {mark ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={mark}
             alt=""
             loading="lazy"
-            className="h-12 w-12 rounded-xl bg-panel object-cover ring-1 ring-ink/10"
+            className="h-14 w-14 rounded-xl bg-panel object-cover ring-1 ring-ink/10"
           />
         ) : (
           <div
-            className="flex h-12 w-12 items-center justify-center rounded-xl ring-1 ring-ink/10"
+            className="flex h-14 w-14 items-center justify-center rounded-xl ring-1 ring-ink/10"
             style={{ background: brandGradient(entry.url) }}
           >
-            <span className="text-[19px] font-semibold text-white/90">
+            <span className="text-[22px] font-semibold text-white/90">
               {entry.displayName.replace(/^@/, "").charAt(0).toUpperCase()}
             </span>
           </div>
         )}
 
-        <h3 className="mt-3 truncate text-[14px] font-semibold tracking-[-0.015em]">
+        <h3 className="mt-3 w-full truncate text-[14px] font-semibold tracking-[-0.015em]">
           {entry.displayName}
         </h3>
 
-        <dl className="mt-2 space-y-[3px] text-[11.5px] text-ink-faint">
+        <dl className="mt-3 w-full space-y-[3px] border-t border-rule pt-2 text-[11.5px] text-ink-faint">
           <div className="flex justify-between gap-2">
             <dt>Held</dt>
             <dd className="num text-ink-soft">
