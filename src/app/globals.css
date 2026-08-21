@@ -22,6 +22,7 @@
     var(--font-instrument-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  --font-hand: var(--font-caveat), "Bradley Hand", cursive;
 }
 
 /* Dark mode reuses the same tokens, so every utility flips without a single
@@ -378,4 +379,35 @@ body > * {
 
 [data-theme="dark"] .theme-icon-dark {
   display: block;
+}
+
+/* Taking a spot from a row has to be felt at the top of the page, otherwise
+   the click reads as having done nothing at all. */
+@keyframes claim-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.claim-pop {
+  animation: claim-pop 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes field-flash {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-gain) 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 12px transparent;
+  }
+}
+
+.field-flash {
+  animation: field-flash 0.9s ease-out;
 }

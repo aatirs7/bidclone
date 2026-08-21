@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
+import { Caveat, IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 
 import { appUrl } from "@/lib/app-url";
@@ -16,6 +16,15 @@ const mono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-ibm-plex-mono",
+  display: "swap",
+});
+
+// One handwritten face, used only for margin notes. The interface stays
+// straight faced; the annotations are the aside.
+const hand = Caveat({
+  subsets: ["latin"],
+  weight: ["600"],
+  variable: "--font-caveat",
   display: "swap",
 });
 
@@ -39,7 +48,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${sans.variable} ${mono.variable}`}
+      className={`${sans.variable} ${mono.variable} ${hand.variable}`}
       suppressHydrationWarning
     >
       <head>

@@ -3,7 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import type Stripe from "stripe";
 
 import { db } from "@/db";
-import { bids, entries } from "@/db/schema";
+import { bids, entries, powerups } from "@/db/schema";
 import { isBlocked } from "@/lib/blocklist";
 import { fetchMetadata } from "@/lib/metadata";
 import {
@@ -12,6 +12,7 @@ import {
   normalizeUrl,
 } from "@/lib/normalize-url";
 import { rankOf, settleSeat } from "@/lib/seat";
+import { POWERUPS, isPowerupKind } from "@/lib/powerups";
 import { stripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -51,8 +52,20 @@ export async function POST(req: Request) {
   // Re-normalize rather than trusting what came back from Stripe, and re-check
   // the blocklist in case it grew between checkout and payment.
   const url = normalizeUrl(session.metadata?.url ?? "");
-  const amount = session.amount_total ?? 0;
+  const paid = session.amount_total ?? 0;
   const logoUrl = normalizeLogoUrl(session.metadata?.logo_url);
+
+  // Power-ups ride in the same session, so the amount paid is not the bid.
+  // The bid is what is left after their catalog prices, derived from money
+  // actually received rather than from metadata, which cannot be trusted.
+  const chosen = (session.metadata?.powerups ?? "")
+    .split(",")
+    .filter(isPowerupKind);
+  const powerupTotal = chosen.reduce(
+    (sum, kind) => sum + POWERUPS[kind].priceCents,
+    0,
+  );
+  const amount = paid - powerupTotal;
 
   if (!url || isBlocked(url) || amount <= 0) {
     console.warn("[webhook] dropping session", session.id, url, amount);
@@ -120,6 +133,26 @@ export async function POST(req: Request) {
                 : null,
           })
           .where(eq(bids.id, bid.id));
+      }
+
+      // Power-ups are keyed on the session id plus the kind, so a replayed
+      // webhook conflicts here exactly as the bid does.
+      if (chosen.length > 0) {
+        const now2 = Date.now();
+        await tx
+          .insert(powerups)
+          .values(
+            chosen.map((kind) => ({
+              entryId: entry.id,
+              kind,
+              amountCents: POWERUPS[kind].priceCents,
+              stripeSessionId: `${session.id}:${kind}`,
+              expiresAt: POWERUPS[kind].durationMs
+                ? new Date(now2 + POWERUPS[kind].durationMs)
+                : null,
+            })),
+          )
+          .onConflictDoNothing({ target: powerups.stripeSessionId });
       }
 
       return { entryId: entry.id, needsMetadata: !entry.faviconUrl };

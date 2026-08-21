@@ -19,7 +19,7 @@ export function Masthead() {
           />
           cheapseat<span className="font-normal text-ink-faint">.lol</span>
         </Link>
-        <nav className="flex items-center gap-5 text-sm sm:gap-[22px]">
+        <nav className="relative flex items-center gap-5 text-sm sm:gap-[22px]">
           <Link href="/#board" className="text-ink-soft transition-colors hover:text-ink">
             Board
           </Link>
@@ -30,9 +30,53 @@ export function Masthead() {
             Wall
           </Link>
           <ThemeToggle />
+          <WallNote />
         </nav>
       </div>
     </header>
+  );
+}
+
+/**
+ * A margin note, in the one handwritten face on the site. The interface stays
+ * straight faced, so the aside is allowed to be the thing that is not.
+ */
+function WallNote() {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute right-[-6px] top-full hidden select-none pt-1 lg:block"
+    >
+      <svg
+        width="54"
+        height="34"
+        viewBox="0 0 54 34"
+        fill="none"
+        className="absolute right-[104px] top-0 text-ink-faint"
+      >
+        <path
+          d="M52 30C40 31 22 29 12 20 7 15 5 9 8 4"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <path
+          d="M3 9c1.5-3.5 4-5.5 5-5.5S11 6 12.5 8"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span
+        className="block whitespace-nowrap text-[17px] leading-[1.05] text-ink-soft"
+        style={{ fontFamily: "var(--font-hand)" }}
+      >
+        first seat lives on
+        <br />
+        the wall forever
+      </span>
+    </span>
   );
 }
 

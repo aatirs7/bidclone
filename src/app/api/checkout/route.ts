@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isBlocked } from "@/lib/blocklist";
 import { MAX_BID_CENTS, MIN_BID_CENTS } from "@/lib/money";
+import { POWERUPS, isPowerupKind, type PowerupKind } from "@/lib/powerups";
 import { normalizeLogoUrl, normalizeUrl } from "@/lib/normalize-url";
 import { appUrl, stripe } from "@/lib/stripe";
 
@@ -16,10 +17,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Bad request." }, { status: 400 });
   }
 
-  const { url, amountCents, logoUrl } = (body ?? {}) as {
+  const { url, amountCents, logoUrl, powerups } = (body ?? {}) as {
     url?: unknown;
     amountCents?: unknown;
     logoUrl?: unknown;
+    powerups?: unknown;
   };
 
   if (typeof url !== "string") {
@@ -55,6 +57,12 @@ export async function POST(req: Request) {
     );
   }
 
+  // Prices come from the catalog on the server. The client sends kinds only,
+  // never amounts, and duplicates collapse.
+  const chosen: PowerupKind[] = Array.isArray(powerups)
+    ? [...new Set(powerups.filter(isPowerupKind))]
+    : [];
+
   try {
     const session = await stripe().checkout.sessions.create({
       mode: "payment",
@@ -73,11 +81,23 @@ export async function POST(req: Request) {
             },
           },
         },
+        ...chosen.map((kind) => ({
+          quantity: 1,
+          price_data: {
+            currency: "usd" as const,
+            unit_amount: POWERUPS[kind].priceCents,
+            product_data: {
+              name: `${POWERUPS[kind].name} for ${normalized}`,
+              description: POWERUPS[kind].blurb,
+            },
+          },
+        })),
       ],
       metadata: {
         url: normalized,
         amount_cents: String(amount),
         logo_url: normalizeLogoUrl(logoUrl) ?? "",
+        powerups: chosen.join(","),
       },
       payment_intent_data: { statement_descriptor_suffix: "CHEAPSEAT" },
       success_url: `${appUrl()}/?bid=success`,

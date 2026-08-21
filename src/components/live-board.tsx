@@ -15,6 +15,8 @@ import { normalizeUrl } from "@/lib/normalize-url";
 import { brandGradient } from "@/lib/brand";
 import { ordinal } from "@/lib/ordinal";
 import { PowerupIcon } from "./powerup-icon";
+import { PowerupModal } from "./powerup-modal";
+import { type PowerupKind } from "@/lib/powerups";
 import { Champion } from "./champion";
 import { PowerupStrip } from "./powerup-strip";
 import { BoardEntry } from "./row";
@@ -58,6 +60,10 @@ export function LiveBoard({ initial }: { initial: Board }) {
   const [dropped, setDropped] = useState<Set<string>>(new Set());
   const [leadChanged, setLeadChanged] = useState(false);
   const [powerupsOpen, setPowerupsOpen] = useState(false);
+  const [chooserOpen, setChooserOpen] = useState(false);
+  const [chosen, setChosen] = useState<PowerupKind[]>([]);
+  // Drives the acknowledgement when a spot is taken from a row.
+  const [claimed, setClaimed] = useState<number | null>(null);
 
   const urlRef = useRef<HTMLInputElement>(null);
   const positions = useRef(new Map<string, number>());
@@ -160,17 +166,32 @@ export function LiveBoard({ initial }: { initial: Board }) {
     // the keyboard. The scroll follows, and must not fight the focus.
     urlRef.current?.focus({ preventScroll: true });
     urlRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    // Silently moving the cursor reads as nothing happening, so the price
+    // pops, the field flashes, and the page says what it just did.
+    setClaimed(cents);
+    window.setTimeout(() => setClaimed(null), 4_000);
   }, []);
 
-  async function submit(event: React.FormEvent) {
+  function submit(event: React.FormEvent) {
     event.preventDefault();
+    if (!url.trim()) {
+      urlRef.current?.focus();
+      return;
+    }
+    setError(null);
+    // Offer the edge before Stripe, not after. Continuing without one is a
+    // single click.
+    setChooserOpen(true);
+  }
+
+  async function checkout() {
     setError(null);
     setSubmitting(true);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url, amountCents: amount }),
+        body: JSON.stringify({ url, amountCents: amount, powerups: chosen }),
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) {
@@ -257,7 +278,11 @@ export function LiveBoard({ initial }: { initial: Board }) {
             <Stepper label="Lower amount" onClick={() => step(-1)}>
               &minus;
             </Stepper>
-            <span className="num flex items-baseline text-[clamp(28px,4.6vw,42px)] font-semibold tracking-[-0.04em] text-gain">
+            <span
+              className={`num flex items-baseline text-[clamp(28px,4.6vw,42px)] font-semibold tracking-[-0.04em] text-gain ${
+                claimed !== null ? "claim-pop" : ""
+              }`}
+            >
               <span aria-hidden="true">$</span>
               <input
                 value={dollars}
@@ -295,7 +320,9 @@ export function LiveBoard({ initial }: { initial: Board }) {
           onSubmit={submit}
           className="mx-auto mt-4 flex max-w-[620px] flex-col gap-[10px] sm:flex-row"
         >
-          <label className="flex h-[48px] flex-1 items-center gap-[10px] rounded-full border border-rule bg-panel px-5 transition-colors focus-within:border-ink focus-within:ring-2 focus-within:ring-gain/40">
+          <label className={`flex h-[48px] flex-1 items-center gap-[10px] rounded-full border border-rule bg-panel px-5 transition-colors focus-within:border-ink focus-within:ring-2 focus-within:ring-gain/40 ${
+              claimed !== null ? "field-flash" : ""
+            }`}>
             <svg
               width="15"
               height="15"
@@ -333,6 +360,12 @@ export function LiveBoard({ initial }: { initial: Board }) {
         {error ? (
           <p className="mt-3 text-[13px] text-drop" role="alert">
             {error}
+          </p>
+        ) : null}
+
+        {claimed !== null && !url.trim() ? (
+          <p className="deal-in mt-3 text-[13px] font-medium text-gain">
+            Bid set to {formatCents(claimed)}. Add your URL to place it.
           </p>
         ) : null}
 
@@ -575,6 +608,23 @@ export function LiveBoard({ initial }: { initial: Board }) {
         </Link>
       </section>
 
+      <PowerupModal
+        open={chooserOpen}
+        onClose={() => setChooserOpen(false)}
+        onContinue={checkout}
+        selected={chosen}
+        onToggle={(kind) =>
+          setChosen((current) =>
+            current.includes(kind)
+              ? current.filter((k) => k !== kind)
+              : [...current, kind],
+          )
+        }
+        bidCents={amount}
+        seatRank={preview?.rank ?? seatForAmount}
+        submitting={submitting}
+        error={error}
+      />
     </main>
   );
 }
