@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isBlocked } from "@/lib/blocklist";
 import { MAX_BID_CENTS, MIN_BID_CENTS } from "@/lib/money";
-import { normalizeUrl } from "@/lib/normalize-url";
+import { normalizeLogoUrl, normalizeUrl } from "@/lib/normalize-url";
 import { appUrl, stripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -16,9 +16,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Bad request." }, { status: 400 });
   }
 
-  const { url, amountCents } = (body ?? {}) as {
+  const { url, amountCents, logoUrl } = (body ?? {}) as {
     url?: unknown;
     amountCents?: unknown;
+    logoUrl?: unknown;
   };
 
   if (typeof url !== "string") {
@@ -73,7 +74,11 @@ export async function POST(req: Request) {
           },
         },
       ],
-      metadata: { url: normalized, amount_cents: String(amount) },
+      metadata: {
+        url: normalized,
+        amount_cents: String(amount),
+        logo_url: normalizeLogoUrl(logoUrl) ?? "",
+      },
       payment_intent_data: { statement_descriptor_suffix: "CHEAPSEAT" },
       success_url: `${appUrl()}/?bid=success`,
       cancel_url: `${appUrl()}/`,

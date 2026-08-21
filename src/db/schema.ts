@@ -24,6 +24,8 @@ export const entries = pgTable(
     displayName: text("display_name").notNull(),
     tagline: text("tagline"),
     faviconUrl: text("favicon_url"),
+    /** Supplied by the bidder at checkout. Takes precedence over the favicon. */
+    logoUrl: text("logo_url"),
     /** Only ever written by the Stripe webhook, always as a recomputed sum of bids. */
     totalCents: integer("total_cents").notNull().default(0),
     clickCount: integer("click_count").notNull().default(0),

@@ -56,3 +56,20 @@ export function normalizeUrl(input: string): string | null {
 export function toHref(normalized: string): string {
   return `https://${normalized}`;
 }
+
+/**
+ * A bidder supplied image URL. Dropped rather than rejected when unusable: a
+ * malformed logo must never block a payment. Moderation covers the rest.
+ */
+export function normalizeLogoUrl(input: unknown): string | null {
+  if (typeof input !== "string") return null;
+  const raw = input.trim();
+  if (!raw || raw.length > 500) return null;
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}

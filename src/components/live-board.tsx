@@ -11,6 +11,7 @@ import {
   formatCount,
 } from "@/lib/money";
 import { formatAgo, formatDuration } from "@/lib/time";
+import { Champion } from "./champion";
 import { LedgerHead, LedgerRow } from "./row";
 
 const POLL_MS = 10_000;
@@ -47,6 +48,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
   // fight them by reformatting mid keystroke.
   const [draft, setDraft] = useState<string | null>(null);
   const [url, setUrl] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -159,7 +161,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url, amountCents: amount }),
+        body: JSON.stringify({ url, amountCents: amount, logoUrl }),
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) {
@@ -174,21 +176,45 @@ export function LiveBoard({ initial }: { initial: Board }) {
     }
   }
 
-  const visible = showAll ? board.rows : board.rows.slice(0, 50);
+  const leader = board.rows[0] ?? null;
+  // Rank 01 lives in the showcase above, so the ledger lists the challengers.
+  const chasers = board.rows.slice(1);
+  const visible = showAll ? chasers : chasers.slice(0, 49);
 
   return (
     <>
       <LiveStrip board={board} />
 
       <main className="mx-auto max-w-[940px] px-5">
-        <section className="border-b border-ink/15 pt-9 pb-7 sm:pt-14">
+        {leader ? (
+          <div className="pt-6 sm:pt-8">
+            <Champion row={leader} onTake={takeSpot} animate={leadChanged} />
+          </div>
+        ) : null}
+
+        <section className="border-b border-ink/15 pt-9 pb-7 sm:pt-11">
           <div className="flex flex-col gap-7 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-[440px]">
+            <div className="max-w-[520px]">
               <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-faint">
                 The seat is bought, not earned
               </div>
-              <h1 className="text-[clamp(30px,4.6vw,44px)] font-semibold leading-[1.05] tracking-[-0.035em]">
-                Take the seat
+              <h1 className="text-[clamp(27px,3.8vw,38px)] font-semibold leading-[1.08] tracking-[-0.035em]">
+                {leader ? (
+                  <>
+                    They paid{" "}
+                    <span className="num text-gain">
+                      {formatCents(leader.totalCents)}
+                    </span>
+                    .<br />
+                    Get on this board for $1.
+                  </>
+                ) : (
+                  <>
+                    The seat is empty.
+                    <br />
+                    Be number one here for $1.
+                  </>
+                )}
               </h1>
               <p className="mt-3 text-[14.5px] leading-[1.5] text-ink-soft">
                 <b className="font-semibold text-ink">
@@ -275,6 +301,32 @@ export function LiveBoard({ initial }: { initial: Board }) {
               {submitting ? "Opening checkout" : "Place bid"}
             </button>
           </form>
+
+          <label className="mt-[10px] flex h-[42px] items-center gap-[10px] border border-rule bg-panel px-[14px] focus-within:border-ink">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              className="flex-none text-ink-faint"
+              aria-hidden="true"
+            >
+              <rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5" />
+              <circle cx="5.75" cy="6.25" r="1.1" />
+              <path d="M2.5 11.5l3.5-3 3 2.5 2-1.75 2.5 2.25" />
+            </svg>
+            <input
+              value={logoUrl}
+              onChange={(e) => setLogoUrl(e.target.value)}
+              type="text"
+              inputMode="url"
+              aria-label="Logo image URL, optional"
+              placeholder="Logo image URL (optional). We use your favicon if you skip it."
+              className="h-full w-full border-0 bg-transparent text-[13.5px] text-ink outline-none placeholder:text-ink-faint"
+            />
+          </label>
 
           {error ? (
             <p className="mt-2 text-[13px] text-drop" role="alert">
@@ -366,13 +418,13 @@ export function LiveBoard({ initial }: { initial: Board }) {
               <LedgerRow
                 key={row.id}
                 row={row}
-                position={index + 1}
+                position={index + 2}
                 onTake={takeSpot}
                 dethroned={dropped.has(row.id)}
                 animate={leadChanged}
               />
             ))}
-            {!showAll && board.rows.length > 50 ? (
+            {!showAll && chasers.length > 49 ? (
               <button
                 type="button"
                 onClick={() => setShowAll(true)}

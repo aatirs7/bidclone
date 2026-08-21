@@ -10,6 +10,7 @@ export type BoardRow = {
   displayName: string;
   tagline: string | null;
   faviconUrl: string | null;
+  logoUrl: string | null;
   totalCents: number;
   clickCount: number;
   /** ISO string while this entry holds the seat, otherwise null. */
@@ -92,6 +93,7 @@ const loadRows = ttlCache(5_000, async (): Promise<BoardRow[]> => {
       displayName: entries.displayName,
       tagline: entries.tagline,
       faviconUrl: entries.faviconUrl,
+      logoUrl: entries.logoUrl,
       totalCents: entries.totalCents,
       clickCount: entries.clickCount,
       reignStartedAt: entries.reignStartedAt,

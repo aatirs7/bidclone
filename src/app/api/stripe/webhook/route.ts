@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { bids, entries } from "@/db/schema";
 import { isBlocked } from "@/lib/blocklist";
 import { fetchMetadata } from "@/lib/metadata";
-import { normalizeUrl } from "@/lib/normalize-url";
+import { normalizeLogoUrl, normalizeUrl } from "@/lib/normalize-url";
 import { rankOf, settleSeat } from "@/lib/seat";
 import { stripe } from "@/lib/stripe";
 
@@ -48,6 +48,7 @@ export async function POST(req: Request) {
   // the blocklist in case it grew between checkout and payment.
   const url = normalizeUrl(session.metadata?.url ?? "");
   const amount = session.amount_total ?? 0;
+  const logoUrl = normalizeLogoUrl(session.metadata?.logo_url);
 
   if (!url || isBlocked(url) || amount <= 0) {
     console.warn("[webhook] dropping session", session.id, url, amount);
@@ -63,12 +64,15 @@ export async function POST(req: Request) {
         .values({
           url,
           displayName: url.split("/")[0],
+          logoUrl,
           firstBidAt: now,
           lastBidAt: now,
         })
         .onConflictDoUpdate({
           target: entries.url,
-          set: { lastBidAt: now },
+          // A bidder who supplies a logo replaces whatever was there. Omitting
+          // it leaves the existing mark alone.
+          set: logoUrl ? { lastBidAt: now, logoUrl } : { lastBidAt: now },
         })
         .returning({ id: entries.id, faviconUrl: entries.faviconUrl });
 

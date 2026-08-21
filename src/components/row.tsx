@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { BoardRow } from "@/lib/leaderboard";
 import { costToPass, formatCents, formatCount } from "@/lib/money";
 import { formatDuration } from "@/lib/time";
+import { brandGradient } from "@/lib/brand";
 import { Money } from "./money";
 import { ReignClock } from "./reign-clock";
 
@@ -35,17 +36,33 @@ export function LedgerHead() {
 
 function Favicon({ row, large }: { row: BoardRow; large: boolean }) {
   const box = large
-    ? "h-8 w-8 rounded-[6px]"
-    : "h-[22px] w-[22px] rounded-[4px]";
-  if (!row.faviconUrl) return <div className={`${box} flex-none bg-rule`} />;
+    ? "h-9 w-9 rounded-[7px]"
+    : "h-[24px] w-[24px] rounded-[5px]";
+  const mark = row.logoUrl ?? row.faviconUrl;
+  if (mark) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={mark}
+        alt=""
+        loading="lazy"
+        className={`${box} flex-none bg-panel object-cover ring-1 ring-ink/10`}
+      />
+    );
+  }
+  // Deterministic gradient rather than a grey box, so every row reads as a
+  // brand. The color on this page comes from the entries, never the chrome.
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={row.faviconUrl}
-      alt=""
-      loading="lazy"
-      className={`${box} flex-none bg-rule object-cover`}
-    />
+    <div
+      className={`${box} flex flex-none items-center justify-center ring-1 ring-ink/10`}
+      style={{ background: brandGradient(row.url) }}
+    >
+      <span
+        className={`font-semibold text-white/90 ${large ? "text-[15px]" : "text-[11px]"}`}
+      >
+        {row.displayName.replace(/^@/, "").charAt(0).toUpperCase()}
+      </span>
+    </div>
   );
 }
 
