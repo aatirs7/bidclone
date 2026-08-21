@@ -1,21 +1,25 @@
 import Link from "next/link";
 
+import { ThemeToggle } from "./theme-toggle";
+
 export function Masthead() {
   return (
     <header className="border-b border-rule">
       <div className="mx-auto flex max-w-[940px] flex-col items-center gap-2 px-5 py-3 sm:h-15 sm:flex-row sm:justify-between sm:gap-0 sm:py-0">
         <Link href="/" className="flex items-center gap-[9px] text-base font-semibold tracking-[-0.02em]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* The mark is drawn on a light ground, so it sits on an explicit
+              tile. Deliberate in both themes rather than a stray light square. */}
           <img
             src="/logo.png"
             alt=""
-            width={22}
-            height={22}
-            className="h-[22px] w-[22px] flex-none"
+            width={24}
+            height={24}
+            className="h-6 w-6 flex-none rounded-[6px] bg-white object-contain p-[2px] ring-1 ring-ink/10"
           />
           cheapseat<span className="font-normal text-ink-faint">.lol</span>
         </Link>
-        <nav className="flex gap-5 text-sm sm:gap-[22px]">
+        <nav className="flex items-center gap-5 text-sm sm:gap-[22px]">
           <Link href="/#board" className="text-ink-soft transition-colors hover:text-ink">
             Board
           </Link>
@@ -25,6 +29,7 @@ export function Masthead() {
           <Link href="/#reigns" className="text-ink-soft transition-colors hover:text-ink">
             Reigns
           </Link>
+          <ThemeToggle />
         </nav>
       </div>
     </header>

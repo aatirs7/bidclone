@@ -7,7 +7,7 @@
   dropping. Nothing else gets color, ever.
 */
 @theme {
-  --color-ground: #f3f4f1;
+  --color-ground: #eaece8;
   --color-panel: #ffffff;
   --color-ink: #15171a;
   --color-ink-soft: #5a6068;
@@ -24,8 +24,35 @@
   --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 }
 
+/* Dark mode reuses the same tokens, so every utility flips without a single
+   dark: variant in the markup. Green stays money, red stays a drop. */
+[data-theme="dark"] {
+  --grid-line: rgba(237, 234, 228, 0.035);
+  --sheen: rgba(255, 255, 255, 0.06);
+  --color-ground: #0e1013;
+  --color-panel: #171a1e;
+  --color-ink: #edeae4;
+  --color-ink-soft: #a2a8af;
+  --color-ink-faint: #6d747b;
+  --color-rule: #262b31;
+  --color-gain: #2fbf7e;
+  --color-gain-wash: #10271d;
+  --color-drop: #e0594b;
+  --color-drop-wash: #2b1512;
+}
+
+:root {
+  --grid-line: rgba(21, 23, 26, 0.028);
+  --sheen: rgba(255, 255, 255, 0.55);
+}
+
 html {
   -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 body {
@@ -174,7 +201,7 @@ input:focus-visible {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.55),
+    var(--sheen),
     transparent
   );
   animation: seat-sheen 5.5s ease-in-out infinite;
@@ -191,8 +218,8 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background-image:
-    linear-gradient(to right, rgba(21, 23, 26, 0.028) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(21, 23, 26, 0.028) 1px, transparent 1px);
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-size: 32px 32px;
   mask-image: radial-gradient(ellipse 90% 55% at 50% 0%, #000 20%, transparent 78%);
 }
@@ -231,7 +258,7 @@ body > * {
   background: linear-gradient(
     to right,
     transparent,
-    rgba(21, 23, 26, 0.16),
+    var(--color-rule),
     transparent
   );
 }
@@ -278,4 +305,17 @@ body > * {
 
 .deal-in {
   animation: deal-in 0.42s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* The toggle swaps its icon in CSS, so it needs no client state. */
+.theme-icon-dark {
+  display: none;
+}
+
+[data-theme="dark"] .theme-icon-light {
+  display: none;
+}
+
+[data-theme="dark"] .theme-icon-dark {
+  display: block;
 }

@@ -11,7 +11,6 @@ import {
   formatCount,
 } from "@/lib/money";
 import { formatAgo, formatDuration } from "@/lib/time";
-import { BidDialog } from "./bid-dialog";
 import { Champion } from "./champion";
 import { PowerupStrip } from "./powerup-strip";
 import { BoardEntry } from "./row";
@@ -43,21 +42,19 @@ function stepFor(cents: number, direction: number) {
 export function LiveBoard({ initial }: { initial: Board }) {
   const [board, setBoard] = useState(initial);
   // Null means "follow the live cost of the seat". Once the visitor touches a
-  // stepper or takes a spot, their number wins. Derived rather than synced, so
-  // a poll cannot stomp on what they typed.
+  // stepper or takes a spot, their number wins.
   const [override, setOverride] = useState<number | null>(null);
   // Set while the visitor is typing, so the field does not fight them by
   // reformatting mid keystroke.
   const [draft, setDraft] = useState<string | null>(null);
   const [url, setUrl] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
-  const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dropped, setDropped] = useState<Set<string>>(new Set());
   const [leadChanged, setLeadChanged] = useState(false);
 
+  const urlRef = useRef<HTMLInputElement>(null);
   const positions = useRef(new Map<string, number>());
 
   // Presence heartbeat. One row per visitor per minute, which is what makes the
@@ -150,9 +147,14 @@ export function LiveBoard({ initial }: { initial: Board }) {
     [board.seatPriceCents],
   );
 
+  // Sets the amount and puts the cursor where the visitor has to type. There is
+  // no dialog: the next click after this goes straight to Stripe.
   const takeSpot = useCallback((cents: number) => {
     setOverride(clampBid(cents));
-    setOpen(true);
+    // Focus first and inside the click gesture, otherwise iOS refuses to raise
+    // the keyboard. The scroll follows, and must not fight the focus.
+    urlRef.current?.focus({ preventScroll: true });
+    urlRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, []);
 
   async function submit(event: React.FormEvent) {
@@ -163,7 +165,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url, amountCents: amount, logoUrl }),
+        body: JSON.stringify({ url, amountCents: amount }),
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) {
@@ -179,215 +181,245 @@ export function LiveBoard({ initial }: { initial: Board }) {
   }
 
   const leader = board.rows[0] ?? null;
-  // Rank 01 lives in the showcase above, so the ledger lists the challengers.
+  // Rank 01 lives in the showcase, so the board lists the challengers.
   const chasers = board.rows.slice(1);
   const visible = showAll ? chasers : chasers.slice(0, 49);
 
   return (
-    <>
-      <LiveStrip board={board} />
+    <main className="mx-auto max-w-[940px] px-4 sm:px-5">
+      <LivePill board={board} />
 
-      <main className="mx-auto max-w-[940px] px-4 sm:px-5">
-        {leader ? (
-          <div className="pt-4 sm:pt-6">
-            <Champion row={leader} onTake={takeSpot} animate={leadChanged} />
+      <section className="pt-5 text-center sm:pt-6">
+        <h1 className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[clamp(24px,3.6vw,34px)] font-semibold tracking-[-0.035em]">
+          <span>Take the top seat for</span>
+          <span className="flex items-center gap-2 sm:gap-3">
+            <Stepper label="Lower amount" onClick={() => step(-1)}>
+              &minus;
+            </Stepper>
+            <span className="num flex items-baseline text-[clamp(28px,4.6vw,42px)] font-semibold tracking-[-0.04em] text-gain">
+              <span aria-hidden="true">$</span>
+              <input
+                value={dollars}
+                onChange={(e) =>
+                  setDraft(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))
+                }
+                onFocus={(e) => e.target.select()}
+                onBlur={commitDraft}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitDraft();
+                  }
+                }}
+                type="text"
+                inputMode="numeric"
+                aria-label="Bid amount in dollars"
+                className="num border-0 bg-transparent p-0 text-left font-semibold tracking-[-0.04em] text-gain outline-none"
+                style={{ width: `${Math.max(1, dollars.length)}ch` }}
+              />
+            </span>
+            <Stepper label="Raise amount" onClick={() => step(1)}>
+              +
+            </Stepper>
+          </span>
+        </h1>
+
+        <p className="mx-auto mt-3 max-w-[600px] text-[13.5px] leading-[1.45] text-ink-soft">
+          <b className="font-semibold text-gain">New seats start at $1.</b>{" "}
+          Paying less than the leader still puts you on the board, at whatever
+          seat that bid can take. Every bid stays on your name.
+        </p>
+
+        <form
+          onSubmit={submit}
+          className="mx-auto mt-4 flex max-w-[620px] flex-col gap-[10px] sm:flex-row"
+        >
+          <label className="flex h-[48px] flex-1 items-center gap-[10px] rounded-full border border-rule bg-panel px-5 transition-colors focus-within:border-ink">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              className="flex-none text-ink-faint"
+              aria-hidden="true"
+            >
+              <circle cx="8" cy="8" r="6.5" />
+              <path d="M1.5 8h13M8 1.5a10 10 0 0 1 0 13 10 10 0 0 1 0-13" />
+            </svg>
+            <input
+              ref={urlRef}
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              type="text"
+              inputMode="url"
+              autoComplete="url"
+              aria-label="Your product URL or handle"
+              placeholder="Your product URL or @handle"
+              className="h-full w-full border-0 bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-faint"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="h-[48px] flex-none rounded-full bg-ink px-8 text-[15px] font-semibold tracking-[-0.01em] text-ground transition-all hover:bg-gain active:scale-[0.98] disabled:opacity-60"
+          >
+            {submitting ? "Opening checkout" : "Place bid"}
+          </button>
+        </form>
+
+        {error ? (
+          <p className="mt-3 text-[13px] text-drop" role="alert">
+            {error}
+          </p>
+        ) : null}
+
+        <p className="mt-[10px] text-[12px] text-ink-faint">
+          Already listed? Enter the same URL and your bids stack. One time
+          payment, no refunds, and your name and icon come from your own site.
+        </p>
+      </section>
+
+      {leader ? (
+        <div className="pt-5">
+          <Champion row={leader} onTake={takeSpot} animate={leadChanged} />
+        </div>
+      ) : (
+        <div className="mt-7 rounded-2xl border border-rule bg-panel p-10 text-center">
+          <p className="text-[clamp(21px,5vw,32px)] font-semibold tracking-[-0.03em]">
+            The seat is empty.
+            <br className="sm:hidden" /> Be number one here for $1.
+          </p>
+        </div>
+      )}
+
+      <div className="hidden md:block">
+        <PowerupStrip />
+      </div>
+
+      <section id="board" className="scroll-mt-20 pt-6">
+        <h2 className="ledger-heading mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
+          <span className="whitespace-nowrap">
+            The board{" "}
+            <span className="num text-ink-faint">
+              {formatCount(board.stats.entryCount)}
+            </span>{" "}
+            {board.stats.entryCount === 1 ? "entry" : "entries"}
+          </span>
+        </h2>
+
+        {chasers.length === 0 ? (
+          <div className="rounded-2xl border border-rule bg-panel py-10 text-center text-[14px] text-ink-faint">
+            {leader
+              ? "Nobody is chasing yet. Second place costs $1."
+              : "First place costs $1."}
           </div>
         ) : (
-          <div className="mt-6 border border-rule bg-panel p-10 text-center">
-            <p className="text-[clamp(21px,5vw,32px)] font-semibold tracking-[-0.03em]">
-              The seat is empty.
-              <br className="sm:hidden" /> Be number one here for $1.
-            </p>
-          </div>
+          <>
+            {visible.map((row, index) => (
+              <BoardEntry
+                key={row.id}
+                row={row}
+                position={index + 2}
+                index={index}
+                onTake={takeSpot}
+                dethroned={dropped.has(row.id)}
+              />
+            ))}
+            {!showAll && chasers.length > 49 ? (
+              <button
+                type="button"
+                onClick={() => setShowAll(true)}
+                className="mt-4 w-full rounded-full border border-rule py-3 text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink"
+              >
+                Show all {formatCount(board.rows.length)} entries
+              </button>
+            ) : null}
+          </>
         )}
+      </section>
 
-        {/* Compact pitch band, centered. The form itself lives behind these
-            buttons, so the board clears the fold. */}
-        <div className="mt-5 border-y border-ink/15 py-5 text-center">
-          <p className="text-[clamp(18px,2.8vw,24px)] font-semibold leading-[1.2] tracking-[-0.025em]">
-            {leader ? (
-              <>
-                They paid{" "}
-                <span className="num text-gain">
-                  {formatCents(leader.totalCents)}
+      <div className="mt-8 md:hidden">
+        <PowerupStrip />
+      </div>
+
+      <section className="mt-12 grid grid-cols-1 gap-x-10 gap-y-8 border-t border-rule pt-8 md:grid-cols-2">
+        <Panel title="Moving now">
+          {board.movers.length === 0 ? (
+            <Quiet>No clicks in the last hour.</Quiet>
+          ) : (
+            board.movers.map((m) => (
+              <li key={m.id} className={ITEM}>
+                <Dot src={m.faviconUrl} />
+                <span className="truncate font-medium">{m.displayName}</span>
+                <span className="flex-1" />
+                <span className="num flex-none text-[12.5px] text-ink-soft">
+                  {formatCount(m.clicksPerHour)}/h
                 </span>
-                . Get on this board for $1.
-              </>
-            ) : (
-              <>Be number one here for $1.</>
-            )}
-          </p>
-          <p className="mx-auto mt-[6px] max-w-[54ch] text-[13.5px] text-ink-soft">
-            Every bid stays on your name. Spend less than the leader and you
-            take a lower seat, not nothing.
-          </p>
+              </li>
+            ))
+          )}
+        </Panel>
 
-          <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => takeSpot(board.seatPriceCents)}
-              className="w-full bg-ink px-7 py-3 text-[14.5px] font-semibold tracking-[-0.01em] text-ground transition-colors hover:bg-gain sm:w-auto"
-            >
-              Take the top seat, {formatCents(board.seatPriceCents)}
-            </button>
-            <button
-              type="button"
-              onClick={() => takeSpot(MIN_BID_CENTS)}
-              className="w-full border border-rule px-7 py-3 text-[14.5px] font-semibold tracking-[-0.01em] text-ink-soft transition-colors hover:border-ink hover:text-ink sm:w-auto"
-            >
-              Join the board for $1
-            </button>
+        <Panel title="Seat changes">
+          {board.feed.length === 0 ? (
+            <Quiet>Nothing has been paid yet.</Quiet>
+          ) : (
+            board.feed.map((item) => (
+              <li key={item.id} className={ITEM}>
+                <Dot src={item.faviconUrl} />
+                <span className="truncate font-medium">{item.displayName}</span>
+                <span className="num flex-none text-[12.5px] text-gain">
+                  {item.rank ? `#${item.rank}` : "new"}
+                </span>
+                <span className="flex-1" />
+                <span className="flex-none truncate text-[12px] text-ink-faint">
+                  {item.displacedName && item.displacedReignSeconds !== null
+                    ? `took it after ${formatDuration(item.displacedReignSeconds)}`
+                    : formatAgo(item.at)}
+                </span>
+              </li>
+            ))
+          )}
+        </Panel>
+      </section>
+
+      <section id="reigns" className="mt-11 scroll-mt-20">
+        <div className="mb-4 text-center">
+          <h2 className="ledger-heading text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
+            <span className="whitespace-nowrap">Longest reigns</span>
+          </h2>
+          <div className="mt-2 text-[13px] text-ink-soft">
+            The one board you cannot buy outright
           </div>
         </div>
-
-        <PowerupStrip />
-
-        <section id="board" className="scroll-mt-20 pt-6">
-          <div className="mb-4 text-center">
-            <h2 className="ledger-heading text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
-              <span className="whitespace-nowrap">The board</span>
-            </h2>
-            <div className="mt-2 text-[16px] font-semibold tracking-[-0.02em]">
-              Everyone chasing the seat
-              <span className="ml-2 font-normal text-ink-faint">
-                <span className="num">{formatCount(board.stats.entryCount)}</span>{" "}
-                {board.stats.entryCount === 1 ? "entry" : "entries"}
-              </span>
-            </div>
-          </div>
-
-          {chasers.length === 0 ? (
-            <div className="border-y border-rule py-10 text-center text-[14px] text-ink-faint">
-              {leader
-                ? "Nobody is chasing yet. Second place costs $1."
-                : "First place costs $1."}
-            </div>
+        <ul className="rounded-2xl border border-rule bg-panel px-4 py-2">
+          {board.reigns.length === 0 ? (
+            <Quiet>Nobody has held the seat long enough to record one.</Quiet>
           ) : (
-            <>
-              {visible.map((row, index) => (
-                <BoardEntry
-                  key={row.id}
-                  row={row}
-                  position={index + 2}
-                  index={index}
-                  onTake={takeSpot}
-                  dethroned={dropped.has(row.id)}
-                />
-              ))}
-              {!showAll && chasers.length > 49 ? (
-                <button
-                  type="button"
-                  onClick={() => setShowAll(true)}
-                  className="mt-4 w-full border border-rule py-3 text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink"
+            board.reigns.map((r, i) => (
+              <li key={r.id} className={ITEM}>
+                <span className="num w-6 flex-none text-[12.5px] font-semibold text-ink-faint">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <Dot src={r.faviconUrl} />
+                <Link
+                  href={`/e/${r.id}`}
+                  className="truncate font-medium hover:underline"
                 >
-                  Show all {formatCount(board.rows.length)} entries
-                </button>
-              ) : null}
-            </>
+                  {r.displayName}
+                </Link>
+                <span className="flex-1" />
+                <span className="num flex-none text-[12.5px] text-ink-soft">
+                  {formatDuration(r.seconds)}
+                </span>
+              </li>
+            ))
           )}
-        </section>
-
-        <section className="mt-12 grid grid-cols-1 gap-x-10 gap-y-8 border-t border-ink/15 pt-8 md:grid-cols-2">
-          <Panel title="Moving now">
-            {board.movers.length === 0 ? (
-              <Quiet>No clicks in the last hour.</Quiet>
-            ) : (
-              board.movers.map((m) => (
-                <li key={m.id} className={ITEM}>
-                  <Dot src={m.faviconUrl} />
-                  <span className="truncate font-medium">{m.displayName}</span>
-                  <span className="flex-1" />
-                  <span className="num flex-none text-[12.5px] text-ink-soft">
-                    {formatCount(m.clicksPerHour)}/h
-                  </span>
-                </li>
-              ))
-            )}
-          </Panel>
-
-          <Panel title="Seat changes">
-            {board.feed.length === 0 ? (
-              <Quiet>Nothing has been paid yet.</Quiet>
-            ) : (
-              board.feed.map((item) => (
-                <li key={item.id} className={ITEM}>
-                  <Dot src={item.faviconUrl} />
-                  <span className="truncate font-medium">
-                    {item.displayName}
-                  </span>
-                  <span className="num flex-none text-[12.5px] text-gain">
-                    {item.rank ? `#${item.rank}` : "new"}
-                  </span>
-                  <span className="flex-1" />
-                  <span className="flex-none truncate text-[12px] text-ink-faint">
-                    {item.displacedName && item.displacedReignSeconds !== null
-                      ? `took it after ${formatDuration(item.displacedReignSeconds)}`
-                      : formatAgo(item.at)}
-                  </span>
-                </li>
-              ))
-            )}
-          </Panel>
-        </section>
-
-        <section id="reigns" className="mt-10 scroll-mt-20">
-          <div className="mb-4 text-center">
-            <h2 className="ledger-heading text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
-              <span className="whitespace-nowrap">Longest reigns</span>
-            </h2>
-            <div className="mt-2 text-[13px] text-ink-soft">
-              The one board you cannot buy outright
-            </div>
-          </div>
-          <div className="border-t border-ink/15 pt-1">
-            <ul>
-              {board.reigns.length === 0 ? (
-                <Quiet>
-                  Nobody has held the seat long enough to record one.
-                </Quiet>
-              ) : (
-                board.reigns.map((r, i) => (
-                  <li key={r.id} className={ITEM}>
-                    <span className="num w-6 flex-none text-[12.5px] font-semibold text-ink-faint">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <Dot src={r.faviconUrl} />
-                    <Link
-                      href={`/e/${r.id}`}
-                      className="truncate font-medium hover:underline"
-                    >
-                      {r.displayName}
-                    </Link>
-                    <span className="flex-1" />
-                    <span className="num flex-none text-[12.5px] text-ink-soft">
-                      {formatDuration(r.seconds)}
-                    </span>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        </section>
-      </main>
-
-      <BidDialog
-        open={open}
-        onClose={() => setOpen(false)}
-        url={url}
-        setUrl={setUrl}
-        logoUrl={logoUrl}
-        setLogoUrl={setLogoUrl}
-        dollars={dollars}
-        setDraft={setDraft}
-        commitDraft={commitDraft}
-        step={step}
-        amount={amount}
-        seatPriceCents={board.seatPriceCents}
-        submitting={submitting}
-        error={error}
-        onSubmit={submit}
-      />
-    </>
+        </ul>
+      </section>
+    </main>
   );
 }
 
@@ -400,7 +432,7 @@ function Panel({
 }) {
   return (
     <div>
-      <h2 className="mb-2 border-b border-ink/15 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
+      <h2 className="mb-2 border-b border-rule pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
         {title}
       </h2>
       <ul>{children}</ul>
@@ -413,29 +445,51 @@ function Quiet({ children }: { children: React.ReactNode }) {
 }
 
 function Dot({ src }: { src: string | null }) {
-  if (!src) return <span className="h-5 w-5 flex-none rounded-[5px] bg-rule" />;
+  if (!src) return <span className="h-5 w-5 flex-none rounded-md bg-rule" />;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt=""
       loading="lazy"
-      className="h-5 w-5 flex-none rounded-[5px] bg-rule object-cover"
+      className="h-5 w-5 flex-none rounded-md bg-rule object-cover"
     />
   );
 }
 
-function LiveStrip({ board }: { board: Board }) {
+function Stepper({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="flex h-9 w-9 flex-none items-center justify-center rounded-full border border-rule bg-panel text-[18px] leading-none text-ink-soft transition-all hover:border-ink hover:text-ink active:scale-95"
+    >
+      {children}
+    </button>
+  );
+}
+
+/** A pill, not a full width bar. These stats are a badge, not a system banner. */
+function LivePill({ board }: { board: Board }) {
   const { online, visitorsTotal, paidToDateCents } = board.stats;
   return (
-    <div className="border-b border-rule bg-panel">
-      <div className="mx-auto flex min-h-[34px] max-w-[940px] flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 py-[6px] text-[12px] tracking-[0.01em] text-ink-soft sm:px-5 sm:text-[12.5px]">
+    <div className="flex justify-center pt-3">
+      <div className="lift flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-rule bg-panel px-4 py-[7px] text-[12.5px] text-ink-soft">
         <span className="relative h-[6px] w-[6px] flex-none rounded-full bg-gain">
           <span className="pulse-ring absolute -inset-[3px] rounded-full bg-gain opacity-25" />
         </span>
         <span>
-          <b className="num font-semibold text-ink">{formatCount(online)}</b>{" "}
-          reading now
+          <b className="num font-semibold text-gain">{formatCount(online)}</b>{" "}
+          online
         </span>
         <span className="text-rule">·</span>
         <span>

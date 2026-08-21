@@ -28,16 +28,15 @@ export function BoardEntry({
   dethroned: boolean;
 }) {
   const cost = costToPass(row.totalCents);
-  // The chasers immediately behind the seat get a little more room, so the
-  // board tapers rather than stopping dead after the showcase.
-  const near = position <= 3;
 
   return (
     <article
       style={{ animationDelay: `${Math.min(index, 12) * 28}ms` }}
-      className={`deal-in row-accent lift group relative mb-[10px] flex items-center gap-3 overflow-hidden rounded-xl border border-rule bg-panel transition-colors hover:border-ink/25 sm:gap-4 ${
-        near ? "p-[14px] sm:p-[18px]" : "p-3 sm:p-4"
-      } ${dethroned ? "row-dethroned" : ""}`}
+      // Fixed height, so a long name or a tall logo cannot make one row
+      // taller than the next. The board has to scan as a column.
+      className={`deal-in row-accent lift group relative mb-[10px] flex h-[84px] items-center gap-3 overflow-hidden rounded-xl border border-rule bg-panel px-3 transition-colors hover:border-ink/25 sm:h-[88px] sm:gap-4 sm:px-[18px] ${
+        dethroned ? "row-dethroned" : ""
+      }`}
     >
       <span className="num flex h-8 w-8 flex-none items-center justify-center rounded-full border border-rule text-[12px] font-semibold text-ink-faint sm:h-9 sm:w-9 sm:text-[13px]">
         {String(position).padStart(2, "0")}
@@ -57,7 +56,7 @@ export function BoardEntry({
           </a>
         </h3>
         {row.tagline ? (
-          <p className="mt-[2px] line-clamp-2 text-[13px] leading-[1.45] text-ink-soft">
+          <p className="mt-[1px] truncate text-[12.5px] leading-[1.4] text-ink-soft sm:text-[13px]">
             {row.tagline}
           </p>
         ) : null}
@@ -90,6 +89,7 @@ export function BoardEntry({
 }
 
 function Mark({ row }: { row: BoardRow }) {
+  // Fixed box for every entry, so a wide logo cannot widen the column.
   const box =
     "h-11 w-11 sm:h-12 sm:w-12 flex-none rounded-xl overflow-hidden ring-1 ring-ink/10";
   const mark = row.logoUrl ?? row.faviconUrl;

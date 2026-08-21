@@ -38,18 +38,12 @@ export function Champion({
         className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-[0.13] blur-2xl"
         style={{ background: brandGradient(row.url) }}
       />
-      <span
-        aria-hidden="true"
-        className="num pointer-events-none absolute -bottom-10 -left-3 select-none text-[120px] font-semibold leading-none tracking-[-0.06em] text-gain opacity-[0.06] sm:-bottom-14 sm:left-2 sm:text-[176px]"
-      >
-        01
-      </span>
 
-      <div className="relative flex flex-col items-center gap-4 p-5 text-center sm:gap-6 sm:p-8 md:flex-row md:items-center md:gap-9 md:text-left">
+      <div className="relative flex flex-col items-center gap-4 p-5 text-center sm:gap-6 sm:p-6 md:flex-row md:items-center md:gap-7 md:text-left">
         <BrandMark row={row} />
 
         <div className="min-w-0 flex-1">
-          <div className="mb-3 flex items-center justify-center gap-[10px] md:justify-start">
+          <div className="mb-2 flex items-center justify-center gap-[10px] md:justify-start">
             <span className="num flex h-7 items-center rounded-full bg-gain px-[10px] text-[12px] font-semibold tracking-[0.02em] text-white">
               01
             </span>
@@ -61,7 +55,7 @@ export function Champion({
             </span>
           </div>
 
-          <h2 className="text-[clamp(26px,7vw,48px)] font-semibold leading-[1.03] tracking-[-0.04em]">
+          <h2 className="text-[clamp(25px,4.6vw,38px)] font-semibold leading-[1.03] tracking-[-0.04em]">
             <a
               href={`/go/${row.id}`}
               rel="nofollow ugc noopener"
@@ -73,14 +67,14 @@ export function Champion({
           </h2>
 
           {row.tagline ? (
-            <p className="mx-auto mt-2 max-w-[46ch] text-[14.5px] leading-[1.5] text-ink-soft md:mx-0">
+            <p className="mx-auto mt-[6px] line-clamp-2 max-w-[52ch] text-[13.5px] leading-[1.45] text-ink-soft md:mx-0">
               {row.tagline}
             </p>
           ) : null}
 
-          <dl className="mt-4 flex flex-wrap items-baseline justify-center gap-x-5 gap-y-3 text-[12.5px] text-ink-faint sm:mt-5 sm:gap-x-7 md:justify-start">
+          <dl className="mt-3 flex flex-wrap items-baseline justify-center gap-x-5 gap-y-2 text-[12.5px] text-ink-faint sm:gap-x-6 md:justify-start">
             <Stat label="Paid">
-              <span className="num text-[clamp(24px,5vw,36px)] font-semibold tracking-[-0.03em] text-gain">
+              <span className="num text-[clamp(23px,3.8vw,30px)] font-semibold tracking-[-0.03em] text-gain">
                 <Money cents={row.totalCents} animate={animate} />
               </span>
             </Stat>
@@ -145,7 +139,7 @@ function Stat({
 
 function BrandMark({ row }: { row: BoardRow }) {
   const size =
-    "h-14 w-14 sm:h-24 sm:w-24 rounded-xl sm:rounded-2xl flex-none overflow-hidden ring-1 ring-ink/10";
+    "h-14 w-14 sm:h-20 sm:w-20 rounded-xl sm:rounded-2xl flex-none overflow-hidden ring-1 ring-ink/10";
   if (row.logoUrl || row.faviconUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element

@@ -14,14 +14,14 @@ export function PowerupStrip() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative mt-4 overflow-hidden rounded-xl border border-gain/25 bg-gradient-to-r from-gain-wash/70 via-panel to-gain-wash/70">
+    <div className="relative mt-3 overflow-hidden rounded-xl border border-gain/25 bg-gradient-to-r from-gain-wash/70 via-panel to-gain-wash/70">
       <span aria-hidden="true" className="seat-sheen" />
 
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="relative flex w-full flex-col items-center gap-[6px] px-4 py-3 text-center"
+        className="relative flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 px-4 py-[9px] text-center"
       >
         <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-gain">
           <span className="relative flex h-[5px] w-[5px] rounded-full bg-gain">
