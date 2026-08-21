@@ -26,9 +26,15 @@ export function Masthead() {
           <Link href="/rules" className="text-ink-soft transition-colors hover:text-ink">
             Rules
           </Link>
-          <Link href="/wall" className="text-ink-soft transition-colors hover:text-ink">
-            Wall
-          </Link>
+          <span className="relative">
+            <Link
+              href="/wall"
+              className="text-ink-soft transition-colors hover:text-ink"
+            >
+              Wall
+            </Link>
+            <WallNote />
+          </span>
           <ThemeToggle />
           <WallNote />
         </nav>
@@ -45,31 +51,32 @@ function WallNote() {
   return (
     <span
       aria-hidden="true"
-      className="pointer-events-none absolute right-[-6px] top-full hidden select-none pt-1 lg:block"
+      className="pointer-events-none absolute left-1/2 top-full hidden select-none items-start lg:flex"
     >
       <svg
-        width="54"
-        height="34"
-        viewBox="0 0 54 34"
+        width="52"
+        height="44"
+        viewBox="0 0 52 44"
         fill="none"
-        className="absolute right-[104px] top-0 text-ink-faint"
+        className="-ml-[10px] mt-[6px] flex-none text-ink-faint"
       >
+        {/* Curves up from the text and lands under the Wall link. */}
         <path
-          d="M52 30C40 31 22 29 12 20 7 15 5 9 8 4"
+          d="M7 6c0 13 3 21 18 27 8 3 18 4 25 4"
           stroke="currentColor"
-          strokeWidth="1.6"
+          strokeWidth="1.7"
           strokeLinecap="round"
         />
         <path
-          d="M3 9c1.5-3.5 4-5.5 5-5.5S11 6 12.5 8"
+          d="M2 13 7 4l6 8"
           stroke="currentColor"
-          strokeWidth="1.6"
+          strokeWidth="1.7"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       </svg>
       <span
-        className="block whitespace-nowrap text-[17px] leading-[1.05] text-ink-soft"
+        className="mt-[26px] block whitespace-nowrap text-[20px] leading-[1.1] text-ink-soft"
         style={{ fontFamily: "var(--font-hand)" }}
       >
         first seat lives on
