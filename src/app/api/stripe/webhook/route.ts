@@ -6,7 +6,11 @@ import { db } from "@/db";
 import { bids, entries } from "@/db/schema";
 import { isBlocked } from "@/lib/blocklist";
 import { fetchMetadata } from "@/lib/metadata";
-import { normalizeLogoUrl, normalizeUrl } from "@/lib/normalize-url";
+import {
+  displayNameFor,
+  normalizeLogoUrl,
+  normalizeUrl,
+} from "@/lib/normalize-url";
 import { rankOf, settleSeat } from "@/lib/seat";
 import { stripe } from "@/lib/stripe";
 
@@ -63,7 +67,7 @@ export async function POST(req: Request) {
         .insert(entries)
         .values({
           url,
-          displayName: url.split("/")[0],
+          displayName: displayNameFor(url),
           logoUrl,
           firstBidAt: now,
           lastBidAt: now,

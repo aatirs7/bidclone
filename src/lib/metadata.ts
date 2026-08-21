@@ -1,4 +1,4 @@
-import { toHref } from "./normalize-url";
+import { displayNameFor, toHref } from "./normalize-url";
 
 export type FetchedMetadata = {
   displayName: string;
@@ -93,11 +93,13 @@ async function defaultIcon(base: URL): Promise<string | null> {
 export async function fetchMetadata(
   normalizedUrl: string,
 ): Promise<FetchedMetadata> {
-  const domain = normalizedUrl.split("/")[0];
+  // The name is always the identity, never the site's own title. Only the
+  // tagline and the icon are fetched.
+  const displayName = displayNameFor(normalizedUrl);
   // No third party icon service. Its fallback is a generic globe, which reads
   // worse than the generated letter mark the board renders when this is null.
   const fallback: FetchedMetadata = {
-    displayName: domain,
+    displayName,
     tagline: null,
     faviconUrl: null,
   };
@@ -133,15 +135,11 @@ export async function fetchMetadata(
       }, new Uint8Array()),
     );
 
-    const title =
-      meta(html, "og:site_name") ??
-      meta(html, "og:title") ??
-      decode(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "");
     const description =
       meta(html, "og:description") ?? meta(html, "description");
 
     return {
-      displayName: title ? clip(title, 60) : domain,
+      displayName,
       tagline: description ? clip(description, 90) : null,
       faviconUrl:
         icon(html, new URL(res.url)) ?? (await defaultIcon(new URL(res.url))),

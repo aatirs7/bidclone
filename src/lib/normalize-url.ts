@@ -52,6 +52,19 @@ export function normalizeUrl(input: string): string | null {
   return host + path;
 }
 
+/**
+ * How an entry is labelled on the board: the bare domain, no protocol and no
+ * www, because that is the identity people recognise. A site's own og:title is
+ * marketing copy and makes the column inconsistent, since only some sites set
+ * one. An X profile reads as its handle instead.
+ */
+export function displayNameFor(normalized: string): string {
+  if (normalized.startsWith("x.com/")) {
+    return `@${normalized.slice("x.com/".length)}`;
+  }
+  return normalized;
+}
+
 /** The clickable form of a stored identity. Storage drops the protocol; links need it. */
 export function toHref(normalized: string): string {
   return `https://${normalized}`;

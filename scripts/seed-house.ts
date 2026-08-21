@@ -26,7 +26,7 @@ import ws from "ws";
 import * as schema from "../src/db/schema";
 import { bids, clicks, entries } from "../src/db/schema";
 import { fetchMetadata } from "../src/lib/metadata";
-import { normalizeUrl } from "../src/lib/normalize-url";
+import { displayNameFor, normalizeUrl } from "../src/lib/normalize-url";
 import { settleSeat } from "../src/lib/seat";
 
 neonConfig.webSocketConstructor = ws;
