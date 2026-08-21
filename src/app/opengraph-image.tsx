@@ -41,7 +41,7 @@ export default async function Image() {
           flexDirection: "column",
           background: GROUND,
           color: INK,
-          padding: "56px 64px",
+          padding: "44px 60px",
           fontFamily: "sans-serif",
         }}
       >
@@ -76,23 +76,23 @@ export default async function Image() {
             <div
               style={{
                 display: "flex",
-                fontSize: 60,
+                fontSize: 52,
                 fontWeight: 700,
                 letterSpacing: "-0.03em",
-                marginTop: 4,
+                marginTop: 2,
               }}
             >
-              {leader.displayName.slice(0, 26)}
+              {leader.displayName.slice(0, 24)}
             </div>
             <div
               style={{
                 display: "flex",
                 alignItems: "baseline",
-                gap: 28,
-                marginTop: 18,
+                gap: 24,
+                marginTop: 12,
               }}
             >
-              <span style={{ fontSize: 76, fontWeight: 700, color: GAIN }}>
+              <span style={{ fontSize: 64, fontWeight: 700, color: GAIN }}>
                 {formatCents(leader.totalCents)}
               </span>
               <span style={{ fontSize: 26, color: INK_SOFT }}>
@@ -123,8 +123,8 @@ export default async function Image() {
           style={{
             display: "flex",
             flexDirection: "column",
-            marginTop: 28,
-            gap: 10,
+            marginTop: 22,
+            gap: 8,
           }}
         >
           {chasers.map((row, i) => (
@@ -134,10 +134,10 @@ export default async function Image() {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                fontSize: 26,
+                fontSize: 24,
                 color: INK_SOFT,
                 borderBottom: `1px solid ${RULE}`,
-                paddingBottom: 10,
+                paddingBottom: 8,
               }}
             >
               <span>
@@ -154,7 +154,7 @@ export default async function Image() {
 
         <div style={{ display: "flex", flex: 1 }} />
 
-        <div style={{ display: "flex", fontSize: 24, color: INK_SOFT }}>
+        <div style={{ display: "flex", fontSize: 22, color: INK_SOFT }}>
           {formatCents(board.stats.paidToDateCents)} paid to date across{" "}
           {formatCount(board.stats.entryCount)} entries. Every bid stays on your
           name.
