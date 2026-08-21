@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+/*
+  A trading floor in daylight: institutional, numerate, unembarrassed.
+  Deliberately not the warm cream every other board on this trend is using.
+  Color is rationed: green is currency and upward movement, red is a position
+  dropping. Nothing else gets color, ever.
+*/
+@theme {
+  --color-ground: #f3f4f1;
+  --color-panel: #ffffff;
+  --color-ink: #15171a;
+  --color-ink-soft: #5a6068;
+  --color-ink-faint: #9aa0a6;
+  --color-rule: #e2e4df;
+  --color-gain: #0b7a4b;
+  --color-gain-wash: #e8f2ed;
+  --color-drop: #b23a2f;
+  --color-drop-wash: #f7e9e7;
+
+  --font-sans:
+    var(--font-instrument-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Every number on the page. Tabular figures are mandatory: without them totals
+   jitter horizontally every time they tick and the whole page feels cheap. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+::selection {
+  background: var(--color-gain-wash);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--color-gain);
+  outline-offset: 2px;
+}
+
+/* The one orchestrated moment: a displaced row slides down past the new
+   leader with a brief red flash. Everything else on the page holds still. */
+@keyframes dethroned {
+  0% {
+    background-color: var(--color-drop-wash);
+    border-color: var(--color-drop);
+  }
+  100% {
+    background-color: var(--color-panel);
+    border-color: var(--color-rule);
+  }
+}
+
+.row-dethroned {
+  animation: dethroned 1.6s ease-out;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.28;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.pulse-ring {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
