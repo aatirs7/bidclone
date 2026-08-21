@@ -27,9 +27,9 @@
 
 /* Dark mode reuses the same tokens, so every utility flips without a single
    dark: variant in the markup. Green stays money, red stays a drop. */
-[data-theme="dark"] {
+html[data-theme="dark"] {
   --grid-line: rgba(237, 234, 228, 0.035);
-  --sheen: rgba(255, 255, 255, 0.06);
+  --sheen: rgba(255, 255, 255, 0.07);
   --color-ground: #0e1013;
   --color-panel: #171a1e;
   --color-ink: #edeae4;
@@ -44,7 +44,7 @@
 
 :root {
   --grid-line: rgba(21, 23, 26, 0.045);
-  --sheen: rgba(255, 255, 255, 0.5);
+  --sheen: rgba(11, 122, 75, 0.16);
 }
 
 html {
@@ -218,7 +218,7 @@ input:focus-visible {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 28%;
+  width: 18%;
   background: linear-gradient(
     90deg,
     transparent,
@@ -227,8 +227,10 @@ input:focus-visible {
   );
   /* Durations are set per element and deliberately not multiples of each
      other, so the streaks drift apart instead of pulsing in lockstep. */
+  /* backwards matters: without it the streak sits parked and visible at its
+     start position for the whole delay before the first pass. */
   animation: seat-sheen var(--sheen-dur, 5.5s) linear var(--sheen-delay, 0s)
-    infinite;
+    infinite backwards;
 }
 
 /* ── Atmosphere ────────────────────────────────────────────────────────────
