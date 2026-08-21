@@ -4,7 +4,7 @@ import { eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { entries } from "@/db/schema";
-import { appUrl } from "@/lib/stripe";
+import { appUrl } from "@/lib/app-url";
 import { toHref } from "@/lib/normalize-url";
 
 export const runtime = "nodejs";

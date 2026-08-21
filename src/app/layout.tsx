@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 
+import { appUrl } from "@/lib/app-url";
 import "./globals.css";
 
 const sans = Instrument_Sans({
@@ -19,9 +20,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
-  ),
+  metadataBase: new URL(appUrl()),
   title: "dethrone.lol",
   description:
     "There is always someone at #1. Every bid stays on your name, every click is public, and the seat has a clock on it.",
