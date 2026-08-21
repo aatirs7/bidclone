@@ -141,13 +141,26 @@ input:focus-visible {
   }
 }
 
+/* The streak sweeps at an even speed and fades at both ends, so the long gap
+   between passes is invisible rather than a streak parked off the edge. */
 @keyframes seat-sheen {
   0% {
-    transform: translateX(-120%) skewX(-18deg);
+    transform: translateX(-160%) skewX(-18deg);
+    opacity: 0;
   }
-  55%,
+  6% {
+    opacity: 0.9;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  38% {
+    transform: translateX(420%) skewX(-18deg);
+    opacity: 0;
+  }
   100% {
-    transform: translateX(320%) skewX(-18deg);
+    transform: translateX(420%) skewX(-18deg);
+    opacity: 0;
   }
 }
 
@@ -206,7 +219,7 @@ input:focus-visible {
   );
   /* Durations are set per element and deliberately not multiples of each
      other, so the streaks drift apart instead of pulsing in lockstep. */
-  animation: seat-sheen var(--sheen-dur, 5.5s) ease-in-out var(--sheen-delay, 0s)
+  animation: seat-sheen var(--sheen-dur, 5.5s) linear var(--sheen-delay, 0s)
     infinite;
 }
 

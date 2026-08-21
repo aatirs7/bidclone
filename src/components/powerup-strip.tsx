@@ -30,7 +30,7 @@ export function PowerupStrip({
       <span
         aria-hidden="true"
         className="seat-sheen"
-        style={{ "--sheen-dur": "8.7s", "--sheen-delay": "3.3s" } as React.CSSProperties}
+        style={{ "--sheen-dur": "13.4s", "--sheen-delay": "5.1s" } as React.CSSProperties}
       />
 
       <button
