@@ -102,8 +102,11 @@ const loadRows = ttlCache(5_000, async (): Promise<BoardRow[]> => {
       reignStartedAt: entries.reignStartedAt,
       longestReignSeconds: entries.longestReignSeconds,
       lastBidAt: entries.lastBidAt,
+      // kind is an enum, so the aggregate must be cast to text inside the
+      // array. powerup_kind[] has no parser in the driver and comes back as a
+      // raw string, and it cannot coalesce with a text[] fallback either.
       activePowerups: sql<string[]>`coalesce((
-        select array_agg(distinct p.kind)
+        select array_agg(distinct p.kind::text)
         from ${powerups} p
         where p.entry_id = ${entries.id}
           and (p.expires_at is null or p.expires_at > now())
