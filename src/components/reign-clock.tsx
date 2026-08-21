@@ -9,7 +9,14 @@ import { formatDuration } from "@/lib/time";
  * occupied rather than merely expensive, so it updates every second even
  * though nothing else on the page does.
  */
-export function ReignClock({ since }: { since: string }) {
+export function ReignClock({
+  since,
+  bare = false,
+}: {
+  since: string;
+  /** Ledger columns carry their own header, so the label is dropped there. */
+  bare?: boolean;
+}) {
   const [seconds, setSeconds] = useState(() =>
     Math.max(0, Math.floor((Date.now() - new Date(since).getTime()) / 1000)),
   );
@@ -23,5 +30,10 @@ export function ReignClock({ since }: { since: string }) {
     return () => clearInterval(id);
   }, [since]);
 
-  return <span className="num">holding {formatDuration(seconds)}</span>;
+  return (
+    <span className="num">
+      {bare ? "" : "holding "}
+      {formatDuration(seconds)}
+    </span>
+  );
 }

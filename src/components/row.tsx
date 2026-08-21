@@ -8,17 +8,36 @@ import { formatDuration } from "@/lib/time";
 import { Money } from "./money";
 import { ReignClock } from "./reign-clock";
 
-function Favicon({
-  row,
-  size,
-}: {
-  row: BoardRow;
-  size: "large" | "small";
-}) {
-  const box = size === "large" ? "h-[38px] w-[38px] rounded-[9px]" : "h-[26px] w-[26px] rounded-[6px]";
-  if (!row.faviconUrl) {
-    return <div className={`${box} flex-none bg-rule`} />;
-  }
+/**
+ * One grid, used by the header and every row, so the numbers land in true
+ * columns and the board scans like a statement rather than a stack of cards.
+ * Narrow screens drop cost per click and the held clock and keep rank, entry,
+ * clicks and total.
+ */
+export const COLUMNS =
+  "grid grid-cols-[2rem_minmax(0,1fr)_4.5rem_5.5rem] items-center gap-x-3 md:grid-cols-[2.5rem_minmax(0,1fr)_5.5rem_4.5rem_6rem_6.5rem_auto] md:gap-x-4";
+
+export function LedgerHead() {
+  return (
+    <div
+      className={`${COLUMNS} border-b border-ink/15 px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint`}
+    >
+      <div>Rank</div>
+      <div>Entry</div>
+      <div className="text-right">Clicks</div>
+      <div className="hidden text-right md:block">CPC</div>
+      <div className="hidden text-right md:block">Held</div>
+      <div className="text-right">Total</div>
+      <div className="hidden md:block" />
+    </div>
+  );
+}
+
+function Favicon({ row, large }: { row: BoardRow; large: boolean }) {
+  const box = large
+    ? "h-8 w-8 rounded-[6px]"
+    : "h-[22px] w-[22px] rounded-[4px]";
+  if (!row.faviconUrl) return <div className={`${box} flex-none bg-rule`} />;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -30,46 +49,13 @@ function Favicon({
   );
 }
 
-function Rank({ position, lead }: { position: number; lead: boolean }) {
-  return (
-    <div
-      className={`num w-[26px] flex-none pt-[3px] text-[13px] font-semibold sm:w-8 ${
-        lead ? "text-gain" : "text-ink-faint"
-      }`}
-    >
-      {String(position).padStart(2, "0")}
-    </div>
-  );
+/** Total paid divided by clicks delivered. Published whether or not it flatters. */
+function cpc(row: BoardRow): string {
+  if (row.clickCount <= 0) return "-";
+  return formatCents(Math.round(row.totalCents / row.clickCount));
 }
 
-function TakeButton({
-  row,
-  position,
-  onTake,
-  compact,
-}: {
-  row: BoardRow;
-  position: number;
-  onTake: (cents: number) => void;
-  compact?: boolean;
-}) {
-  const cost = costToPass(row.totalCents);
-  return (
-    <button
-      type="button"
-      onClick={() => onTake(cost)}
-      className={`whitespace-nowrap rounded-[7px] border border-rule bg-transparent text-ink-soft transition-colors hover:border-ink hover:text-ink ${
-        compact ? "hidden px-2 py-1 text-[12px] sm:block" : "px-[11px] py-[5px] text-[12.5px]"
-      }`}
-    >
-      {position === 1
-        ? `Take the seat, ${formatCents(cost)}`
-        : `Take #${position} for ${formatCents(cost)}`}
-    </button>
-  );
-}
-
-export function FullRow({
+export function LedgerRow({
   row,
   position,
   onTake,
@@ -83,100 +69,95 @@ export function FullRow({
   animate: boolean;
 }) {
   const lead = position === 1;
-  return (
-    <article
-      className={`relative mb-2 flex items-start gap-[14px] rounded-xl border p-[14px] sm:px-[18px] sm:py-4 ${
-        lead ? "border-gain bg-gain-wash" : "border-rule bg-panel"
-      } ${dethroned ? "row-dethroned" : ""}`}
-    >
-      <Rank position={position} lead={lead} />
-      <Favicon row={row} size="large" />
+  // Top three carry their tagline and a larger mark. Everything below is a
+  // single tight line.
+  const featured = position <= 3;
+  const cost = costToPass(row.totalCents);
 
-      <div className="min-w-0 flex-1">
-        <h3 className="mb-[3px] text-[15px] font-semibold tracking-[-0.01em]">
+  return (
+    <div
+      className={`${COLUMNS} border-b border-rule px-1 transition-colors ${
+        featured ? "py-3" : "py-[7px]"
+      } ${lead ? "bg-gain-wash" : "hover:bg-panel"} ${
+        dethroned ? "row-dethroned" : ""
+      }`}
+    >
+      <div
+        className={`num self-start pt-[2px] text-[13px] font-semibold ${
+          lead ? "text-gain" : "text-ink-faint"
+        }`}
+      >
+        {String(position).padStart(2, "0")}
+      </div>
+
+      <div className="flex min-w-0 items-start gap-[10px] self-start">
+        <Favicon row={row} large={featured} />
+        <div className="min-w-0">
           <a
             href={`/go/${row.id}`}
             rel="nofollow ugc noopener"
             target="_blank"
-            className="hover:underline"
+            className={`block truncate tracking-[-0.01em] hover:underline ${
+              featured ? "text-[15px] font-semibold" : "text-sm font-medium"
+            }`}
           >
             {row.displayName}
           </a>
-        </h3>
-        {row.tagline ? (
-          <p className="mb-[7px] hidden text-[13.5px] leading-[1.45] text-ink-soft sm:block">
-            {row.tagline}
-          </p>
-        ) : null}
-        <div className="flex flex-wrap items-center gap-x-[14px] gap-y-1 text-[12.5px] text-ink-faint">
-          <Link href={`/e/${row.id}`} className="num font-medium text-gain hover:underline">
-            {formatCount(row.clickCount)} clicks
-          </Link>
-          {row.reignStartedAt ? (
-            <ReignClock since={row.reignStartedAt} />
-          ) : row.longestReignSeconds > 0 ? (
-            <span className="num">
-              reigned {formatDuration(row.longestReignSeconds)}
-            </span>
+          {featured && row.tagline ? (
+            <p className="mt-[2px] line-clamp-2 hidden text-[13px] leading-[1.45] text-ink-soft md:block">
+              {row.tagline}
+            </p>
+          ) : null}
+          {lead && row.reignStartedAt ? (
+            <div className="num mt-1 text-[12px] text-gain md:hidden">
+              <ReignClock since={row.reignStartedAt} />
+            </div>
           ) : null}
         </div>
       </div>
 
-      <div className="flex flex-none flex-col items-end gap-2 pt-[2px]">
-        <div
-          className={`num text-[19px] font-semibold tracking-[-0.02em] ${
-            lead ? "text-gain" : ""
-          }`}
-        >
-          <Money cents={row.totalCents} animate={animate && lead} />
-        </div>
-        <TakeButton row={row} position={position} onTake={onTake} />
-      </div>
-    </article>
-  );
-}
-
-export function CompactRow({
-  row,
-  position,
-  onTake,
-  dethroned,
-}: {
-  row: BoardRow;
-  position: number;
-  onTake: (cents: number) => void;
-  dethroned: boolean;
-}) {
-  return (
-    <article
-      className={`relative mb-2 flex items-center gap-[14px] rounded-xl border border-rule bg-panel px-[14px] py-3 sm:px-[18px] ${
-        dethroned ? "row-dethroned" : ""
-      }`}
-    >
-      <Rank position={position} lead={false} />
-      <Favicon row={row} size="small" />
-      <div className="min-w-0 flex-1">
-        <h3 className="truncate text-sm font-medium tracking-[-0.01em]">
-          <a
-            href={`/go/${row.id}`}
-            rel="nofollow ugc noopener"
-            target="_blank"
-            className="hover:underline"
-          >
-            {row.displayName}
-          </a>
-        </h3>
-      </div>
       <Link
         href={`/e/${row.id}`}
-        className="num hidden flex-none text-[12.5px] font-medium text-gain hover:underline sm:block"
+        className="num self-start pt-[2px] text-right text-[12.5px] text-ink-soft hover:text-ink hover:underline"
       >
-        {formatCount(row.clickCount)} clicks
+        {formatCount(row.clickCount)}
       </Link>
-      <TakeButton row={row} position={position} onTake={onTake} compact />
-      <div className="num flex-none text-[15px] font-semibold tracking-[-0.02em]">
-        {formatCents(row.totalCents)}
+
+      <div className="num hidden self-start pt-[2px] text-right text-[12.5px] text-ink-soft md:block">
+        {cpc(row)}
       </div>
-    </article>
+
+      <div className="num hidden self-start pt-[2px] text-right text-[12.5px] md:block">
+        {row.reignStartedAt ? (
+          <span className="text-gain">
+            <ReignClock since={row.reignStartedAt} bare />
+          </span>
+        ) : row.longestReignSeconds > 0 ? (
+          <span className="text-ink-faint">
+            {formatDuration(row.longestReignSeconds)}
+          </span>
+        ) : (
+          <span className="text-ink-faint">-</span>
+        )}
+      </div>
+
+      <div
+        className={`num self-start pt-[1px] text-right font-semibold tracking-[-0.02em] ${
+          featured ? "text-[17px]" : "text-[14px]"
+        } ${lead ? "text-gain" : ""}`}
+      >
+        <Money cents={row.totalCents} animate={animate && lead} />
+      </div>
+
+      <div className="hidden self-start md:block">
+        <button
+          type="button"
+          onClick={() => onTake(cost)}
+          className="whitespace-nowrap border-b border-dotted border-ink-faint text-[12.5px] text-ink-soft transition-colors hover:border-ink hover:text-ink"
+        >
+          {lead ? "Take the seat" : `Take #${position}`}, {formatCents(cost)}
+        </button>
+      </div>
+    </div>
   );
 }

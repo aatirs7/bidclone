@@ -11,15 +11,27 @@ import {
   formatCount,
 } from "@/lib/money";
 import { formatAgo, formatDuration } from "@/lib/time";
-import { CompactRow, FullRow } from "./row";
+import { LedgerHead, LedgerRow } from "./row";
 
 const POLL_MS = 10_000;
 const PULSE_MS = 60_000;
-const STEP_CENTS = 2_500;
+
+/**
+ * The step scales with the amount. A flat step is wrong at both ends: $25 jumps
+ * are absurd when the seat costs $1, and $1 jumps are useless when it costs
+ * $8,000. The long tail of small bidders is the thing most worth protecting.
+ */
+function stepFor(cents: number, direction: number) {
+  const basis = direction < 0 ? cents - 1 : cents;
+  if (basis < 2_000) return 100;
+  if (basis < 10_000) return 500;
+  if (basis < 50_000) return 2_500;
+  return 10_000;
+}
 const FLASH_MS = 1_600;
 
 const ITEM =
-  "flex items-center gap-[10px] border-b border-rule py-2 text-[13.5px] last:border-b-0 last:pb-0";
+  "flex items-center gap-[10px] border-b border-rule py-[7px] text-[13px] last:border-b-0";
 
 function clampBid(cents: number) {
   return Math.min(MAX_BID_CENTS, Math.max(MIN_BID_CENTS, Math.round(cents)));
@@ -31,6 +43,9 @@ export function LiveBoard({ initial }: { initial: Board }) {
   // stepper or takes a spot, their number wins. Derived rather than synced, so
   // a poll cannot stomp on what they typed.
   const [override, setOverride] = useState<number | null>(null);
+  // Set while the visitor is typing their own number, so the field does not
+  // fight them by reformatting mid keystroke.
+  const [draft, setDraft] = useState<string | null>(null);
   const [url, setUrl] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -119,10 +134,21 @@ export function LiveBoard({ initial }: { initial: Board }) {
     urlRef.current?.focus({ preventScroll: true });
   }, []);
 
-  const step = (delta: number) => {
-    setOverride((current) =>
-      clampBid((current ?? board.seatPriceCents) + delta),
-    );
+  const step = (direction: number) => {
+    setDraft(null);
+    setOverride((current) => {
+      const from = current ?? board.seatPriceCents;
+      return clampBid(from + stepFor(from, direction) * direction);
+    });
+  };
+
+  const dollars =
+    draft ?? formatCount(Math.round(amount / 100));
+
+  const commitDraft = () => {
+    const parsed = Number.parseInt(draft ?? "", 10);
+    setDraft(null);
+    if (Number.isFinite(parsed)) setOverride(clampBid(parsed * 100));
   };
 
   async function submit(event: React.FormEvent) {
@@ -149,51 +175,73 @@ export function LiveBoard({ initial }: { initial: Board }) {
   }
 
   const visible = showAll ? board.rows : board.rows.slice(0, 50);
-  const top = visible.slice(0, 3);
-  const rest = visible.slice(3);
 
   return (
     <>
       <LiveStrip board={board} />
 
       <main className="mx-auto max-w-[940px] px-5">
-        <section className="pt-10 pb-2 text-center sm:pt-16">
-          <div className="mb-[22px] text-[11px] uppercase tracking-[0.14em] text-ink-faint">
-            The seat is bought, not earned
-          </div>
+        <section className="border-b border-ink/15 pt-9 pb-7 sm:pt-14">
+          <div className="flex flex-col gap-7 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-[440px]">
+              <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-faint">
+                The seat is bought, not earned
+              </div>
+              <h1 className="text-[clamp(30px,4.6vw,44px)] font-semibold leading-[1.05] tracking-[-0.035em]">
+                Take the seat
+              </h1>
+              <p className="mt-3 text-[14.5px] leading-[1.5] text-ink-soft">
+                <b className="font-semibold text-ink">
+                  Every bid you place stays on your name.
+                </b>{" "}
+                Spend less than the leader and you take a lower seat, not
+                nothing.
+              </p>
+            </div>
 
-          <div className="mb-5 flex flex-wrap items-center justify-center gap-4">
-            <span className="text-[clamp(26px,5vw,38px)] font-semibold tracking-[-0.03em]">
-              Take the seat for
-            </span>
-            <span className="flex items-center gap-3">
-              <Stepper label="Lower amount" onClick={() => step(-STEP_CENTS)}>
-                &minus;
-              </Stepper>
-              <span
-                className="num min-w-[5.5ch] text-center text-[clamp(38px,8vw,60px)] font-semibold tracking-[-0.03em] text-gain"
-                aria-live="polite"
-              >
-                {formatCents(amount)}
-              </span>
-              <Stepper label="Raise amount" onClick={() => step(STEP_CENTS)}>
-                +
-              </Stepper>
-            </span>
+            <div className="md:text-right">
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-faint">
+                Price of the seat
+              </div>
+              <div className="flex items-center gap-3 md:justify-end">
+                <Stepper label="Lower amount" onClick={() => step(-1)}>
+                  &minus;
+                </Stepper>
+                <span className="num flex items-baseline text-[clamp(36px,7vw,56px)] font-semibold tracking-[-0.035em] text-gain">
+                  <span aria-hidden="true">$</span>
+                  <input
+                    value={dollars}
+                    onChange={(e) =>
+                      setDraft(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))
+                    }
+                    onFocus={(e) => e.target.select()}
+                    onBlur={commitDraft}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        commitDraft();
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    aria-label="Bid amount in dollars"
+                    className="num border-0 bg-transparent p-0 text-left font-semibold tracking-[-0.035em] text-gain outline-none md:text-right"
+                    style={{ width: `${Math.max(1, dollars.length)}ch` }}
+                  />
+                </span>
+                <Stepper label="Raise amount" onClick={() => step(1)}>
+                  +
+                </Stepper>
+              </div>
+            </div>
           </div>
-
-          <p className="mx-auto mb-[30px] max-w-[520px] text-[15px] text-ink-soft">
-            <b className="font-semibold text-ink">
-              Every bid you place stays on your name.
-            </b>{" "}
-            Spend less than the leader and you take a lower seat, not nothing.
-          </p>
 
           <form
             onSubmit={submit}
-            className="mx-auto mb-3 flex max-w-[620px] flex-col gap-[10px] sm:flex-row"
+            className="mt-7 flex flex-col gap-[10px] sm:flex-row"
           >
-            <label className="flex h-[52px] flex-1 items-center gap-[10px] rounded-[10px] border border-rule bg-panel px-[14px] focus-within:border-ink">
+            <label className="flex h-[50px] flex-1 items-center gap-[10px] border border-rule bg-panel px-[14px] focus-within:border-ink">
               <svg
                 width="15"
                 height="15"
@@ -222,28 +270,34 @@ export function LiveBoard({ initial }: { initial: Board }) {
             <button
               type="submit"
               disabled={submitting}
-              className="h-[52px] rounded-[10px] bg-ink px-[26px] text-[15px] font-semibold tracking-[-0.01em] text-ground transition-colors hover:bg-gain disabled:opacity-60"
+              className="h-[50px] bg-ink px-8 text-[15px] font-semibold tracking-[-0.01em] text-ground transition-colors hover:bg-gain disabled:opacity-60"
             >
               {submitting ? "Opening checkout" : "Place bid"}
             </button>
           </form>
 
           {error ? (
-            <p className="mb-2 text-[13px] text-drop" role="alert">
+            <p className="mt-2 text-[13px] text-drop" role="alert">
               {error}
             </p>
           ) : null}
 
-          <p className="mb-3 text-[13px] text-ink-faint">
+          <p className="mt-3 text-[12.5px] text-ink-faint">
             One time payment. No refunds. You are buying a position on this page
-            and nothing else.
+            and nothing else. Type any amount between $1 and $1,000. Already
+            listed? Enter the same URL and your bids stack.
           </p>
-          <p className="mb-[52px] text-[13px] text-ink-faint">
-            Already listed? Enter the same URL and your bids stack.
-          </p>
+
+          {board.seatPriceCents > MAX_BID_CENTS ? (
+            <p className="mt-2 text-[12.5px] text-ink-soft">
+              The seat costs {formatCents(board.seatPriceCents)} and a single
+              payment is capped at {formatCents(MAX_BID_CENTS)}. Bid more than
+              once to keep climbing, since your total is what counts.
+            </p>
+          ) : null}
         </section>
 
-        <section className="mb-[38px] grid grid-cols-1 gap-[14px] md:grid-cols-2">
+        <section className="grid grid-cols-1 gap-x-10 gap-y-7 border-b border-rule py-7 md:grid-cols-2">
           <Panel title="Moving now">
             {board.movers.length === 0 ? (
               <Quiet>No clicks in the last hour.</Quiet>
@@ -253,8 +307,8 @@ export function LiveBoard({ initial }: { initial: Board }) {
                   <Dot src={m.faviconUrl} />
                   <span className="truncate font-medium">{m.displayName}</span>
                   <span className="flex-1" />
-                  <span className="num flex-none text-[12.5px] text-ink-faint">
-                    {formatCount(m.clicksPerHour)} clicks/h
+                  <span className="num flex-none text-[12.5px] text-ink-soft">
+                    {formatCount(m.clicksPerHour)}/h
                   </span>
                 </li>
               ))
@@ -272,13 +326,12 @@ export function LiveBoard({ initial }: { initial: Board }) {
                     {item.displayName}
                   </span>
                   <span className="num flex-none text-[12.5px] text-gain">
-                    {item.rank ? `#${item.rank}` : "new"} ·{" "}
-                    {formatCents(item.totalCents)}
+                    {item.rank ? `#${item.rank}` : "new"}
                   </span>
                   <span className="flex-1" />
-                  <span className="flex-none text-[12.5px] text-ink-faint">
+                  <span className="flex-none truncate text-[12px] text-ink-faint">
                     {item.displacedName && item.displacedReignSeconds !== null
-                      ? `took the seat from ${item.displacedName} after ${formatDuration(item.displacedReignSeconds)}`
+                      ? `took it after ${formatDuration(item.displacedReignSeconds)}`
                       : formatAgo(item.at)}
                   </span>
                 </li>
@@ -289,7 +342,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
 
         <div
           id="board"
-          className="mb-3 flex scroll-mt-20 items-baseline justify-between px-[2px]"
+          className="mb-3 flex scroll-mt-20 items-baseline justify-between pt-8"
         >
           <h2 className="text-[15px] font-semibold tracking-[-0.01em]">
             The board
@@ -301,15 +354,16 @@ export function LiveBoard({ initial }: { initial: Board }) {
         </div>
 
         {board.rows.length === 0 ? (
-          <div className="rounded-xl border border-rule bg-panel p-10 text-center">
+          <div className="border-y border-rule py-12 text-center">
             <p className="text-[15px] font-semibold">
               The seat is empty. First to pay $1 takes it.
             </p>
           </div>
         ) : (
           <>
-            {top.map((row, index) => (
-              <FullRow
+            <LedgerHead />
+            {visible.map((row, index) => (
+              <LedgerRow
                 key={row.id}
                 row={row}
                 position={index + 1}
@@ -318,20 +372,11 @@ export function LiveBoard({ initial }: { initial: Board }) {
                 animate={leadChanged}
               />
             ))}
-            {rest.map((row, index) => (
-              <CompactRow
-                key={row.id}
-                row={row}
-                position={index + 4}
-                onTake={takeSpot}
-                dethroned={dropped.has(row.id)}
-              />
-            ))}
             {!showAll && board.rows.length > 50 ? (
               <button
                 type="button"
                 onClick={() => setShowAll(true)}
-                className="mt-[6px] w-full rounded-[10px] border border-rule bg-transparent p-[13px] text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink"
+                className="mt-4 w-full border border-rule py-3 text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink"
               >
                 Show all {formatCount(board.rows.length)} entries
               </button>
@@ -348,7 +393,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
               The one board you cannot buy outright
             </span>
           </div>
-          <div className="rounded-xl border border-rule bg-panel px-[18px] py-4">
+          <div className="border-t border-ink/15 pt-1">
             <ul>
               {board.reigns.length === 0 ? (
                 <Quiet>
@@ -390,8 +435,8 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-rule bg-panel px-[18px] py-4">
-      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-faint">
+    <div>
+      <h2 className="mb-2 border-b border-ink/15 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
         {title}
       </h2>
       <ul>{children}</ul>
