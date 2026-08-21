@@ -11,6 +11,8 @@ export type PowerupKind =
 export type PowerupSpec = {
   kind: PowerupKind;
   name: string;
+  /** One line summary for the pill. The blurb is the full explanation. */
+  tease: string;
   priceCents: number;
   /** Milliseconds the effect lasts. Zero means it has no clock. */
   durationMs: number;
@@ -24,6 +26,7 @@ export const POWERUPS: Record<PowerupKind, PowerupSpec> = {
   seat_lock: {
     kind: "seat_lock",
     name: "Seat Lock",
+    tease: "5 minutes nobody can pass you",
     priceCents: 500,
     durationMs: 5 * 60_000,
     blurb:
@@ -34,6 +37,7 @@ export const POWERUPS: Record<PowerupKind, PowerupSpec> = {
   challenge: {
     kind: "challenge",
     name: "Challenge",
+    tease: "Call somebody out in public",
     priceCents: 200,
     durationMs: 24 * 3_600_000,
     blurb:
@@ -44,6 +48,7 @@ export const POWERUPS: Record<PowerupKind, PowerupSpec> = {
   last_stand: {
     kind: "last_stand",
     name: "Last Stand",
+    tease: "Lose the seat, get it back",
     priceCents: 1_000,
     durationMs: 3_600_000,
     blurb:
@@ -54,6 +59,7 @@ export const POWERUPS: Record<PowerupKind, PowerupSpec> = {
   spotlight: {
     kind: "spotlight",
     name: "Spotlight",
+    tease: "An hour of being impossible to miss",
     priceCents: 300,
     durationMs: 3_600_000,
     blurb:

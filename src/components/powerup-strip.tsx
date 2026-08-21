@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { POWERUP_LIST } from "@/lib/powerups";
+import { PowerupIcon } from "./powerup-icon";
 import { formatCents } from "@/lib/money";
 
 /**
@@ -50,9 +51,11 @@ export function PowerupStrip({
           {POWERUP_LIST.map((p) => (
             <span
               key={p.kind}
-              className="rounded-full border border-gain/25 bg-panel/70 px-[10px] py-[3px] text-[12.5px] font-medium text-ink"
+              title={p.tease}
+              className="flex items-center gap-[6px] rounded-full border border-gain/25 bg-panel/70 px-[10px] py-[4px] text-[12.5px] font-medium text-ink transition-colors hover:border-gain/60"
             >
-              {p.name}{" "}
+              <PowerupIcon kind={p.kind} className="text-gain" />
+              {p.name}
               <span className="num font-semibold text-gain">
                 {formatCents(p.priceCents)}
               </span>
@@ -93,21 +96,31 @@ export function PowerupStrip({
         aria-hidden={!open}
       >
         <div className="overflow-hidden">
-          <div className="grid grid-cols-1 gap-x-8 gap-y-5 border-t border-gain/20 px-5 py-5 text-center sm:grid-cols-2 sm:text-left">
+          <div className="grid grid-cols-2 gap-2 border-t border-gain/20 p-3 sm:gap-3 sm:p-4 lg:grid-cols-4">
             {POWERUP_LIST.map((p) => (
-              <div key={p.kind}>
-                <div className="flex items-baseline justify-center gap-2 sm:justify-start">
-                  <h3 className="text-[14px] font-semibold">{p.name}</h3>
-                  <span className="num text-[13px] font-semibold text-gain">
-                    {formatCents(p.priceCents)}
-                  </span>
-                </div>
-                <p className="mt-1 text-[12.5px] leading-[1.45] text-ink-soft">
+              <div
+                key={p.kind}
+                className="group/card relative flex flex-col items-center overflow-hidden rounded-xl border border-gain/25 bg-panel px-3 py-4 text-center transition-all duration-200 hover:-translate-y-[2px] hover:border-gain/60"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -top-8 left-1/2 h-20 w-20 -translate-x-1/2 rounded-full bg-gain opacity-[0.07] blur-2xl transition-opacity duration-300 group-hover/card:opacity-[0.16]"
+                />
+                <span className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gain/30 bg-gain-wash text-gain transition-transform duration-200 group-hover/card:scale-110">
+                  <PowerupIcon kind={p.kind} size={20} />
+                </span>
+                <h3 className="relative mt-3 text-[13.5px] font-semibold tracking-[-0.01em]">
+                  {p.name}
+                </h3>
+                <span className="num relative mt-[2px] text-[15px] font-semibold tracking-[-0.02em] text-gain">
+                  {formatCents(p.priceCents)}
+                </span>
+                <p className="relative mt-2 text-[12px] leading-[1.45] text-ink-soft">
                   {p.blurb}
                 </p>
               </div>
             ))}
-            <p className="text-[12px] text-ink-faint sm:col-span-2">
+            <p className="col-span-2 px-1 text-center text-[11.5px] text-ink-faint lg:col-span-4">
               Power-ups go live alongside the board. Everything they do is
               visible on this page, so nobody has to take our word for it.
             </p>

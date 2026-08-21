@@ -40,18 +40,27 @@ export type FeedItem = {
   displacedReignSeconds: number | null;
 };
 
-export type Reign = {
+/** Somebody who has held the seat, whether or not they still do. */
+export type WallEntry = {
   id: string;
+  url: string;
   displayName: string;
   faviconUrl: string | null;
+  logoUrl: string | null;
+  /** Time held across every stint. Only closed out stints count. */
   seconds: number;
+  timesAtOne: number;
+  /** ISO of the first bid that put them at the top. Orders the wall. */
+  claimedAt: string | null;
+  /** Set while they still hold it. */
+  reignStartedAt: string | null;
 };
 
 export type Board = {
   rows: BoardRow[];
   movers: Mover[];
   feed: FeedItem[];
-  reigns: Reign[];
+  wall: WallEntry[];
   stats: {
     online: number;
     visitorsTotal: number;
@@ -170,20 +179,37 @@ const loadFeed = ttlCache(10_000, async (): Promise<FeedItem[]> => {
   return rows.map((r) => ({ ...r, at: r.at.toISOString() }));
 });
 
-const loadReigns = ttlCache(60_000, async (): Promise<Reign[]> => {
-  return db
+const loadWall = ttlCache(60_000, async (): Promise<WallEntry[]> => {
+  const rows = await db
     .select({
       id: entries.id,
+      url: entries.url,
       displayName: entries.displayName,
       faviconUrl: entries.faviconUrl,
+      logoUrl: entries.logoUrl,
       seconds: entries.longestReignSeconds,
+      timesAtOne: entries.timesAtOne,
+      reignStartedAt: entries.reignStartedAt,
+      // rank_after is snapshotted on the bid, so this also catches whoever
+      // took an empty board rather than displacing somebody.
+      claimedAt: sql<Date | null>`(
+        select min(b.created_at) from ${bids} b
+        where b.entry_id = ${entries.id} and b.rank_after = 1
+      )`,
     })
     .from(entries)
-    .where(
-      and(eq(entries.status, "active"), gt(entries.longestReignSeconds, 0)),
-    )
-    .orderBy(desc(entries.longestReignSeconds))
-    .limit(10);
+    .where(and(eq(entries.status, "active"), gt(entries.timesAtOne, 0)))
+    // In the order they arrived at the top. A wall is a record, not a ranking.
+    .orderBy(sql`(
+      select min(b.created_at) from ${bids} b
+      where b.entry_id = ${entries.id} and b.rank_after = 1
+    ) asc nulls last`);
+
+  return rows.map((r) => ({
+    ...r,
+    reignStartedAt: r.reignStartedAt?.toISOString() ?? null,
+    claimedAt: r.claimedAt ? new Date(r.claimedAt).toISOString() : null,
+  }));
 });
 
 const loadStats = ttlCache(30_000, async () => {
@@ -208,11 +234,11 @@ const loadStats = ttlCache(30_000, async () => {
 });
 
 export async function getBoard(): Promise<Board> {
-  const [rows, movers, feed, reigns, stats] = await Promise.all([
+  const [rows, movers, feed, wall, stats] = await Promise.all([
     loadRows(),
     loadMovers(),
     loadFeed(),
-    loadReigns(),
+    loadWall(),
     loadStats(),
   ]);
 
@@ -220,7 +246,7 @@ export async function getBoard(): Promise<Board> {
     rows,
     movers,
     feed,
-    reigns,
+    wall,
     stats,
     seatPriceCents: rows[0] ? costToPass(rows[0].totalCents) : MIN_BID_CENTS,
   };
@@ -230,7 +256,7 @@ const EMPTY: Board = {
   rows: [],
   movers: [],
   feed: [],
-  reigns: [],
+  wall: [],
   stats: { online: 0, visitorsTotal: 0, paidToDateCents: 0, entryCount: 0 },
   seatPriceCents: MIN_BID_CENTS,
 };

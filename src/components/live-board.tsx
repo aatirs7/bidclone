@@ -12,7 +12,9 @@ import {
 } from "@/lib/money";
 import { formatAgo, formatDuration } from "@/lib/time";
 import { normalizeUrl } from "@/lib/normalize-url";
+import { brandGradient } from "@/lib/brand";
 import { ordinal } from "@/lib/ordinal";
+import { PowerupIcon } from "./powerup-icon";
 import { Champion } from "./champion";
 import { PowerupStrip } from "./powerup-strip";
 import { BoardEntry } from "./row";
@@ -201,8 +203,21 @@ export function LiveBoard({ initial }: { initial: Board }) {
    * an equal total sits behind rather than level.
    */
   const preview = useMemo(() => {
-    const normalized = normalizeUrl(url);
-    if (!normalized) return null;
+    const typed = url.trim();
+    if (!typed) return null;
+
+    // Shown from the first keystroke. Until the text parses as a URL the
+    // ranking still holds, because the amount alone decides where a new entry
+    // lands. Only the stacking case needs a resolved identity.
+    const normalized = normalizeUrl(typed);
+    if (!normalized) {
+      return {
+        rank: seatForAmount,
+        newTotal: amount,
+        currentRank: null,
+        name: typed,
+      };
+    }
 
     const existingIndex = board.rows.findIndex((r) => r.url === normalized);
     const existing = existingIndex >= 0 ? board.rows[existingIndex] : null;
@@ -220,7 +235,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
       currentRank: existing ? existingIndex + 1 : null,
       name: existing?.displayName ?? normalized,
     };
-  }, [url, amount, board.rows]);
+  }, [url, amount, board.rows, seatForAmount]);
 
   const leader = board.rows[0] ?? null;
   // Rank 01 lives in the showcase, so the board lists the challengers.
@@ -322,31 +337,62 @@ export function LiveBoard({ initial }: { initial: Board }) {
         ) : null}
 
         {preview ? (
-          <div className="mx-auto mt-3 flex max-w-[620px] flex-col items-center gap-1 rounded-xl border border-gain/25 bg-gain-wash px-4 py-[10px] text-[13px]">
-            <p>
-              {preview.currentRank ? (
-                <>
-                  <b className="font-semibold">{preview.name}</b> is already at{" "}
-                  <span className="num">#{preview.currentRank}</span>. Adding{" "}
-                  <span className="num text-gain">{formatCents(amount)}</span>{" "}
-                  takes it to{" "}
-                  <span className="num font-semibold text-gain">
-                    #{preview.rank}
-                  </span>{" "}
-                  on{" "}
-                  <span className="num">{formatCents(preview.newTotal)}</span>{" "}
-                  total.
-                </>
-              ) : (
-                <>
-                  This puts you at{" "}
-                  <span className="num font-semibold text-gain">
-                    #{preview.rank}
-                  </span>{" "}
-                  of {formatCount(board.stats.entryCount + 1)}.
-                </>
-              )}
-            </p>
+          <div className="deal-in mx-auto mt-4 max-w-[620px] overflow-hidden rounded-2xl border border-gain/30 bg-gradient-to-br from-gain-wash via-panel to-gain-wash">
+            <div className="flex items-center gap-4 px-4 py-3 sm:px-5">
+              {/* The result, set as a result. A rank is a score, so it gets to
+                  look like one. */}
+              <span className="num flex h-14 w-14 flex-none flex-col items-center justify-center rounded-xl border border-gain/35 bg-panel text-gain">
+                <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-faint">
+                  Seat
+                </span>
+                <span className="text-[22px] font-semibold leading-none tracking-[-0.04em]">
+                  {preview.rank}
+                </span>
+              </span>
+
+              <div className="min-w-0 flex-1 text-left">
+                {preview.currentRank ? (
+                  <>
+                    <p className="text-[14px] font-semibold tracking-[-0.01em]">
+                      {preview.currentRank === preview.rank
+                        ? `Holds ${ordinal(preview.rank)} either way`
+                        : `Climbs ${preview.currentRank - preview.rank} ${
+                            preview.currentRank - preview.rank === 1
+                              ? "place"
+                              : "places"
+                          }`}
+                    </p>
+                    <p className="mt-[2px] text-[12.5px] text-ink-soft">
+                      <b className="font-semibold text-ink">{preview.name}</b>{" "}
+                      is at{" "}
+                      <span className="num">#{preview.currentRank}</span>. This
+                      bid stacks to{" "}
+                      <span className="num text-gain">
+                        {formatCents(preview.newTotal)}
+                      </span>
+                      .
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[14px] font-semibold tracking-[-0.01em]">
+                      {preview.rank === 1
+                        ? "Straight to the top"
+                        : `Lands at ${ordinal(preview.rank)}`}
+                    </p>
+                    <p className="mt-[2px] text-[12.5px] text-ink-soft">
+                      {formatCents(amount)} puts {preview.name} on the board
+                      {preview.rank === 1
+                        ? " and starts your clock."
+                        : `, ahead of ${formatCount(
+                            Math.max(0, board.stats.entryCount - preview.rank + 1),
+                          )} of them.`}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+
             <button
               type="button"
               onClick={() => {
@@ -358,9 +404,10 @@ export function LiveBoard({ initial }: { initial: Board }) {
                 ).find((el) => el.offsetParent !== null);
                 visible?.scrollIntoView({ block: "center", behavior: "smooth" });
               }}
-              className="text-[12px] text-ink-soft underline decoration-dotted underline-offset-2 transition-colors hover:text-ink"
+              className="flex w-full items-center justify-center gap-[6px] border-t border-gain/25 py-[9px] text-[12px] font-medium text-gain transition-colors hover:bg-gain-wash"
             >
-              Want an edge as well? See power-ups
+              <PowerupIcon kind="seat_lock" size={13} />
+              Add a power-up and hold it longer
             </button>
           </div>
         ) : null}
@@ -475,40 +522,59 @@ export function LiveBoard({ initial }: { initial: Board }) {
         </Panel>
       </section>
 
-      <section id="reigns" className="mt-11 scroll-mt-20">
+      <section id="wall" className="mt-11 scroll-mt-20">
         <div className="mb-4 text-center">
           <h2 className="ledger-heading text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
-            <span className="whitespace-nowrap">Longest reigns</span>
+            <span className="whitespace-nowrap">The Wall</span>
           </h2>
           <div className="mt-2 text-[13px] text-ink-soft">
-            The one board you cannot buy outright
+            Hold the seat for one minute and your name stays here for good
           </div>
         </div>
-        <ul className="rounded-2xl border border-rule bg-panel px-4 py-2">
-          {board.reigns.length === 0 ? (
-            <Quiet>Nobody has held the seat long enough to record one.</Quiet>
+
+        <Link
+          href="/wall"
+          className="lift group flex flex-col items-center gap-4 rounded-2xl border border-rule bg-panel px-5 py-6 transition-colors hover:border-ink/25 sm:flex-row sm:justify-between"
+        >
+          {board.wall.length === 0 ? (
+            <p className="w-full text-center text-[14px] text-ink-faint">
+              Nobody has held the seat yet. The first plate is unclaimed.
+            </p>
           ) : (
-            board.reigns.map((r, i) => (
-              <li key={r.id} className={ITEM}>
-                <span className="num w-6 flex-none text-[12.5px] font-semibold text-ink-faint">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <Dot src={r.faviconUrl} />
-                <Link
-                  href={`/e/${r.id}`}
-                  className="truncate font-medium hover:underline"
-                >
-                  {r.displayName}
-                </Link>
-                <span className="flex-1" />
-                <span className="num flex-none text-[12.5px] text-ink-soft">
-                  {formatDuration(r.seconds)}
-                </span>
-              </li>
-            ))
+            <>
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                {board.wall.slice(0, 8).map((w) => (
+                  <span
+                    key={w.id}
+                    title={w.displayName}
+                    className="h-9 w-9 overflow-hidden rounded-lg ring-1 ring-ink/10"
+                    style={{ background: brandGradient(w.url) }}
+                  >
+                    {w.logoUrl ?? w.faviconUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={(w.logoUrl ?? w.faviconUrl) as string}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-[14px] font-semibold text-white/90">
+                        {w.displayName.replace(/^@/, "").charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+              <span className="flex-none text-[13px] font-medium text-ink-soft transition-colors group-hover:text-ink">
+                {formatCount(board.wall.length)}{" "}
+                {board.wall.length === 1 ? "name" : "names"} on the wall
+              </span>
+            </>
           )}
-        </ul>
+        </Link>
       </section>
+
     </main>
   );
 }

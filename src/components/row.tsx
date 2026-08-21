@@ -35,7 +35,7 @@ export function BoardEntry({
       style={{ animationDelay: `${Math.min(index, 12) * 28}ms` }}
       // Fixed height, so a long name or a tall logo cannot make one row
       // taller than the next. The board has to scan as a column.
-      className={`deal-in row-accent lift group relative mb-[10px] flex h-[84px] items-center gap-3 overflow-hidden rounded-xl border border-rule bg-panel px-3 transition-colors hover:border-ink/25 sm:h-[88px] sm:gap-4 sm:px-[18px] ${
+      className={`deal-in row-accent row-hover lift group relative mb-[10px] flex h-[84px] items-center gap-3 overflow-hidden rounded-xl border border-rule bg-panel px-3 sm:h-[88px] sm:gap-4 sm:px-[18px] ${
         dethroned ? "row-dethroned" : ""
       }`}
     >
@@ -83,7 +83,7 @@ export function BoardEntry({
         <button
           type="button"
           onClick={() => onTake(cost)}
-          className="whitespace-nowrap rounded-full border border-rule px-3 py-[5px] text-[12px] font-medium text-ink-soft transition-all hover:border-ink hover:bg-ink hover:text-ground active:scale-[0.97]"
+          className="relative whitespace-nowrap rounded-full border border-rule px-3 py-[5px] text-[12px] font-medium text-ink-soft transition-all group-hover:border-ink/40 group-hover:text-ink hover:border-ink hover:bg-ink hover:text-ground active:scale-[0.97]"
         >
           Take for {formatCents(cost)}
         </button>
