@@ -7,12 +7,12 @@
   dropping. Nothing else gets color, ever.
 */
 @theme {
-  --color-ground: #eaece8;
-  --color-panel: #ffffff;
+  --color-ground: #e8eae6;
+  --color-panel: #f6f7f4;
   --color-ink: #15171a;
   --color-ink-soft: #5a6068;
   --color-ink-faint: #9aa0a6;
-  --color-rule: #e2e4df;
+  --color-rule: #dcded8;
   --color-gain: #0b7a4b;
   --color-gain-wash: #e8f2ed;
   --color-drop: #b23a2f;
@@ -204,7 +204,10 @@ input:focus-visible {
     var(--sheen),
     transparent
   );
-  animation: seat-sheen 5.5s ease-in-out infinite;
+  /* Durations are set per element and deliberately not multiples of each
+     other, so the streaks drift apart instead of pulsing in lockstep. */
+  animation: seat-sheen var(--sheen-dur, 5.5s) ease-in-out var(--sheen-delay, 0s)
+    infinite;
 }
 
 /* ── Atmosphere ────────────────────────────────────────────────────────────

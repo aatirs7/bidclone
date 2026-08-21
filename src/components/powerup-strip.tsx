@@ -15,7 +15,11 @@ export function PowerupStrip() {
 
   return (
     <div className="relative mt-3 overflow-hidden rounded-xl border border-gain/25 bg-gradient-to-r from-gain-wash/70 via-panel to-gain-wash/70">
-      <span aria-hidden="true" className="seat-sheen" />
+      <span
+        aria-hidden="true"
+        className="seat-sheen"
+        style={{ "--sheen-dur": "8.7s", "--sheen-delay": "3.3s" } as React.CSSProperties}
+      />
 
       <button
         type="button"

@@ -15,7 +15,7 @@ export function Masthead() {
             alt=""
             width={24}
             height={24}
-            className="h-6 w-6 flex-none rounded-[6px] bg-white object-contain p-[2px] ring-1 ring-ink/10"
+            className="h-6 w-6 flex-none rounded-[6px] bg-[#f4f5f2] object-contain p-[2px] ring-1 ring-ink/10"
           />
           cheapseat<span className="font-normal text-ink-faint">.lol</span>
         </Link>

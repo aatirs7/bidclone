@@ -30,7 +30,11 @@ export function Champion({
 
   return (
     <section className="seat-glow relative overflow-hidden rounded-2xl border border-gain/30 bg-gradient-to-br from-gain-wash via-panel to-panel lift">
-      <span aria-hidden="true" className="seat-sheen" />
+      <span
+        aria-hidden="true"
+        className="seat-sheen"
+        style={{ "--sheen-dur": "6.1s", "--sheen-delay": "0.4s" } as React.CSSProperties}
+      />
       {/* A wash of the entry's own color. The chrome stays disciplined and the
           brand supplies the only real color on the page. */}
       <div
