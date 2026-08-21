@@ -43,9 +43,18 @@ const db = drizzle(new Pool({ connectionString: url }), { schema });
 
 /** Amounts chosen to keep the seat cheap enough that a newcomer is not scared off. */
 const HOUSE = [
-  ["mentorreach.com", 350, 22],
-  ["trajectorycoaches.com", 200, 14],
-  ["ultrase7en.com", 100, 7],
+  // Logos taken from each site's own published assets. trajectorycoaches.com
+  // is omitted: it returns 404, and a dead link has no business on the board.
+  [
+    "elysiumintern.com",
+    350,
+    22,
+    "https://elysiumintern.com/icons/icon-180x180.png",
+  ],
+  ["elysiumbuilds.dev", 250, 16, "https://elysiumbuilds.dev/apple-icon.png"],
+  ["mentorreach.com", 150, 14, "https://mentorreach.com/icon.png"],
+  // No published icon, so the generated letter mark renders instead.
+  ["ultrase7en.com", 100, 7, null],
 ] as const;
 
 async function clear() {
@@ -71,7 +80,7 @@ async function clear() {
 async function seed() {
   await clear();
 
-  for (const [index, [raw, amount, clickCount]] of HOUSE.entries()) {
+  for (const [index, [raw, amount, clickCount, logo]] of HOUSE.entries()) {
     const normalized = normalizeUrl(raw);
     if (!normalized) {
       console.warn("skipping unusable url:", raw);
@@ -90,6 +99,7 @@ async function seed() {
         displayName: meta.displayName,
         tagline: meta.tagline,
         faviconUrl: meta.faviconUrl,
+        logoUrl: logo,
         totalCents: amount,
         clickCount,
         firstBidAt: at,

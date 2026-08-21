@@ -6,6 +6,7 @@ import type { BoardRow } from "@/lib/leaderboard";
 import { costToPass, formatCents, formatCount } from "@/lib/money";
 import { formatAgo } from "@/lib/time";
 import { brandGradient } from "@/lib/brand";
+import { PowerupBadges } from "./powerup-badges";
 import { Money } from "./money";
 
 /**
@@ -45,16 +46,19 @@ export function BoardEntry({
       <Mark row={row} />
 
       <div className="min-w-0 flex-1">
-        <h3 className="truncate text-[15px] font-semibold tracking-[-0.015em] sm:text-[16px]">
-          <a
-            href={`/go/${row.id}`}
-            rel="nofollow ugc noopener"
-            target="_blank"
-            className="hover:underline"
-          >
-            {row.displayName}
-          </a>
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="truncate text-[15px] font-semibold tracking-[-0.015em] sm:text-[16px]">
+            <a
+              href={`/go/${row.id}`}
+              rel="nofollow ugc noopener"
+              target="_blank"
+              className="hover:underline"
+            >
+              {row.displayName}
+            </a>
+          </h3>
+          <PowerupBadges kinds={row.activePowerups} className="flex-none" />
+        </div>
         {row.tagline ? (
           <p className="mt-[1px] truncate text-[12.5px] leading-[1.4] text-ink-soft sm:text-[13px]">
             {row.tagline}

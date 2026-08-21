@@ -1,7 +1,7 @@
 import { and, desc, eq, gt, sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { bids, clicks, entries, visits } from "@/db/schema";
+import { bids, clicks, entries, powerups, visits } from "@/db/schema";
 import { costToPass, MIN_BID_CENTS } from "./money";
 
 export type BoardRow = {
@@ -17,6 +17,8 @@ export type BoardRow = {
   reignStartedAt: string | null;
   longestReignSeconds: number;
   lastBidAt: string | null;
+  /** Kinds currently in effect on this entry. */
+  activePowerups: string[];
 };
 
 export type Mover = {
@@ -100,6 +102,13 @@ const loadRows = ttlCache(5_000, async (): Promise<BoardRow[]> => {
       reignStartedAt: entries.reignStartedAt,
       longestReignSeconds: entries.longestReignSeconds,
       lastBidAt: entries.lastBidAt,
+      activePowerups: sql<string[]>`coalesce((
+        select array_agg(distinct p.kind)
+        from ${powerups} p
+        where p.entry_id = ${entries.id}
+          and (p.expires_at is null or p.expires_at > now())
+          and p.consumed_at is null
+      ), '{}')`,
     })
     .from(entries)
     .where(and(eq(entries.status, "active"), gt(entries.totalCents, 0)))
@@ -110,6 +119,7 @@ const loadRows = ttlCache(5_000, async (): Promise<BoardRow[]> => {
     ...r,
     reignStartedAt: r.reignStartedAt?.toISOString() ?? null,
     lastBidAt: r.lastBidAt?.toISOString() ?? null,
+    activePowerups: r.activePowerups ?? [],
   }));
 });
 

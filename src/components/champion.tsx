@@ -7,6 +7,7 @@ import { costToPass, formatCents, formatCount } from "@/lib/money";
 import { brandGradient } from "@/lib/brand";
 import { Money } from "./money";
 import { ReignClock } from "./reign-clock";
+import { PowerupBadges } from "./powerup-badges";
 
 /**
  * The seat holder, at the size someone paying four figures deserves. This is
@@ -57,6 +58,7 @@ export function Champion({
               </span>
               Holds the seat
             </span>
+            <PowerupBadges kinds={row.activePowerups} />
           </div>
 
           <h2 className="text-[clamp(25px,4.6vw,38px)] font-semibold leading-[1.03] tracking-[-0.04em]">

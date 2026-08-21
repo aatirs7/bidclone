@@ -60,32 +60,60 @@ export function PowerupStrip({
           ))}
         </span>
 
-        <span className="text-[12px] text-ink-soft underline decoration-dotted underline-offset-2">
-          {open ? "Hide" : "Buy an edge, not just a rank"}
+        <span className="flex items-center gap-[6px] text-[12px] text-ink-soft">
+          <span className="underline decoration-dotted underline-offset-2">
+            {open ? "Hide" : "Buy an edge, not just a rank"}
+          </span>
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className={`transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          >
+            <path d="M2.5 4.5 6 8l3.5-3.5" />
+          </svg>
         </span>
       </button>
 
-      {open ? (
-        <div className="relative grid grid-cols-1 gap-x-8 gap-y-5 border-t border-gain/20 px-5 py-5 text-center sm:grid-cols-2 sm:text-left">
-          {POWERUP_LIST.map((p) => (
-            <div key={p.kind}>
-              <div className="flex items-baseline justify-center gap-2 sm:justify-start">
-                <h3 className="text-[14px] font-semibold">{p.name}</h3>
-                <span className="num text-[13px] font-semibold text-gain">
-                  {formatCents(p.priceCents)}
-                </span>
+      {/* Animating grid rows from 0fr to 1fr is the one way to transition to an
+          unknown height without measuring it. The inner wrapper does the
+          clipping so nothing jumps at the end of the transition. */}
+      <div
+        className={`relative grid transition-all duration-300 ease-out ${
+          open
+            ? "grid-rows-[1fr] opacity-100"
+            : "pointer-events-none grid-rows-[0fr] opacity-0"
+        }`}
+        aria-hidden={!open}
+      >
+        <div className="overflow-hidden">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-5 border-t border-gain/20 px-5 py-5 text-center sm:grid-cols-2 sm:text-left">
+            {POWERUP_LIST.map((p) => (
+              <div key={p.kind}>
+                <div className="flex items-baseline justify-center gap-2 sm:justify-start">
+                  <h3 className="text-[14px] font-semibold">{p.name}</h3>
+                  <span className="num text-[13px] font-semibold text-gain">
+                    {formatCents(p.priceCents)}
+                  </span>
+                </div>
+                <p className="mt-1 text-[12.5px] leading-[1.45] text-ink-soft">
+                  {p.blurb}
+                </p>
               </div>
-              <p className="mt-1 text-[12.5px] leading-[1.45] text-ink-soft">
-                {p.blurb}
-              </p>
-            </div>
-          ))}
-          <p className="text-[12px] text-ink-faint sm:col-span-2">
-            Power-ups go live alongside the board. Everything they do is visible
-            on this page, so nobody has to take our word for it.
-          </p>
+            ))}
+            <p className="text-[12px] text-ink-faint sm:col-span-2">
+              Power-ups go live alongside the board. Everything they do is
+              visible on this page, so nobody has to take our word for it.
+            </p>
+          </div>
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }
