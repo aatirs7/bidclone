@@ -7,9 +7,9 @@ export function Masthead() {
     <header className="border-b border-rule">
       <div className="mx-auto flex max-w-[940px] flex-col items-center gap-2 px-5 py-3 sm:h-15 sm:flex-row sm:justify-between sm:gap-0 sm:py-0">
         <Link href="/" className="flex items-center gap-[9px] text-base font-semibold tracking-[-0.02em]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           {/* The mark is drawn on a light ground, so it sits on an explicit
               tile. Deliberate in both themes rather than a stray light square. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
             alt=""
