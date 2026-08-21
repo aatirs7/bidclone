@@ -38,8 +38,10 @@ export function Champion({
         style={{ background: brandGradient(row.url) }}
       />
 
-      <div className="relative flex flex-col gap-6 p-6 sm:p-9 md:flex-row md:items-center md:gap-9">
-        <BrandMark row={row} />
+      <div className="relative flex flex-col gap-4 p-5 sm:gap-6 sm:p-8 md:flex-row md:items-center md:gap-9">
+        <div className="flex items-center gap-4 md:contents">
+          <BrandMark row={row} />
+        </div>
 
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gain">
@@ -49,7 +51,7 @@ export function Champion({
             Holds the seat
           </div>
 
-          <h2 className="text-[clamp(30px,6vw,52px)] font-semibold leading-[1.02] tracking-[-0.04em]">
+          <h2 className="text-[clamp(26px,7vw,48px)] font-semibold leading-[1.03] tracking-[-0.04em]">
             <a
               href={`/go/${row.id}`}
               rel="nofollow ugc noopener"
@@ -66,9 +68,9 @@ export function Champion({
             </p>
           ) : null}
 
-          <dl className="mt-5 flex flex-wrap items-baseline gap-x-7 gap-y-2 text-[12.5px] text-ink-faint">
+          <dl className="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-3 text-[12.5px] text-ink-faint sm:mt-5 sm:gap-x-7">
             <Stat label="Paid">
-              <span className="num text-[clamp(26px,4vw,38px)] font-semibold tracking-[-0.03em] text-gain">
+              <span className="num text-[clamp(24px,5vw,36px)] font-semibold tracking-[-0.03em] text-gain">
                 <Money cents={row.totalCents} animate={animate} />
               </span>
             </Stat>
@@ -133,7 +135,7 @@ function Stat({
 
 function BrandMark({ row }: { row: BoardRow }) {
   const size =
-    "h-20 w-20 sm:h-28 sm:w-28 rounded-2xl flex-none overflow-hidden ring-1 ring-ink/10";
+    "h-14 w-14 sm:h-24 sm:w-24 rounded-xl sm:rounded-2xl flex-none overflow-hidden ring-1 ring-ink/10";
   if (row.logoUrl || row.faviconUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element

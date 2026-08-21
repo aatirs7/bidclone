@@ -51,7 +51,7 @@ export default function RulesPage() {
         </Section>
 
         <Section title="Minimum bid is $1.">
-          Maximum is $1,000 per transaction. Bid again to go higher.
+          Maximum is $1,000 per transaction. Bid again to go higher, since your total is what counts.
         </Section>
 
         <Section title="No refunds.">

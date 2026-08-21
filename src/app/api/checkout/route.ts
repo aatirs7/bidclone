@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     amount > MAX_BID_CENTS
   ) {
     return NextResponse.json(
-      { error: "Amount must be between $1 and $1,000." },
+      { error: `Amount must be between $1 and $${MAX_BID_CENTS / 100}.` },
       { status: 400 },
     );
   }

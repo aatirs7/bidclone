@@ -11,11 +11,20 @@ import {
   formatCount,
 } from "@/lib/money";
 import { formatAgo, formatDuration } from "@/lib/time";
+import { BidDialog } from "./bid-dialog";
 import { Champion } from "./champion";
 import { LedgerHead, LedgerRow } from "./row";
 
 const POLL_MS = 10_000;
 const PULSE_MS = 60_000;
+const FLASH_MS = 1_600;
+
+const ITEM =
+  "flex items-center gap-[10px] border-b border-rule py-[9px] text-[13px] last:border-b-0";
+
+function clampBid(cents: number) {
+  return Math.min(MAX_BID_CENTS, Math.max(MIN_BID_CENTS, Math.round(cents)));
+}
 
 /**
  * The step scales with the amount. A flat step is wrong at both ends: $25 jumps
@@ -29,14 +38,6 @@ function stepFor(cents: number, direction: number) {
   if (basis < 50_000) return 2_500;
   return 10_000;
 }
-const FLASH_MS = 1_600;
-
-const ITEM =
-  "flex items-center gap-[10px] border-b border-rule py-[7px] text-[13px] last:border-b-0";
-
-function clampBid(cents: number) {
-  return Math.min(MAX_BID_CENTS, Math.max(MIN_BID_CENTS, Math.round(cents)));
-}
 
 export function LiveBoard({ initial }: { initial: Board }) {
   const [board, setBoard] = useState(initial);
@@ -44,18 +45,18 @@ export function LiveBoard({ initial }: { initial: Board }) {
   // stepper or takes a spot, their number wins. Derived rather than synced, so
   // a poll cannot stomp on what they typed.
   const [override, setOverride] = useState<number | null>(null);
-  // Set while the visitor is typing their own number, so the field does not
-  // fight them by reformatting mid keystroke.
+  // Set while the visitor is typing, so the field does not fight them by
+  // reformatting mid keystroke.
   const [draft, setDraft] = useState<string | null>(null);
   const [url, setUrl] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dropped, setDropped] = useState<Set<string>>(new Set());
   const [leadChanged, setLeadChanged] = useState(false);
 
-  const urlRef = useRef<HTMLInputElement>(null);
   const positions = useRef(new Map<string, number>());
 
   // Presence heartbeat. One row per visitor per minute, which is what makes the
@@ -129,29 +130,29 @@ export function LiveBoard({ initial }: { initial: Board }) {
   }, [board.rows]);
 
   const amount = override ?? board.seatPriceCents;
+  const dollars = draft ?? formatCount(Math.round(amount / 100));
 
-  const takeSpot = useCallback((cents: number) => {
-    setOverride(clampBid(cents));
-    urlRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
-    urlRef.current?.focus({ preventScroll: true });
-  }, []);
-
-  const step = (direction: number) => {
-    setDraft(null);
-    setOverride((current) => {
-      const from = current ?? board.seatPriceCents;
-      return clampBid(from + stepFor(from, direction) * direction);
-    });
-  };
-
-  const dollars =
-    draft ?? formatCount(Math.round(amount / 100));
-
-  const commitDraft = () => {
+  const commitDraft = useCallback(() => {
     const parsed = Number.parseInt(draft ?? "", 10);
     setDraft(null);
     if (Number.isFinite(parsed)) setOverride(clampBid(parsed * 100));
-  };
+  }, [draft]);
+
+  const step = useCallback(
+    (direction: number) => {
+      setDraft(null);
+      setOverride((current) => {
+        const from = current ?? board.seatPriceCents;
+        return clampBid(from + stepFor(from, direction) * direction);
+      });
+    },
+    [board.seatPriceCents],
+  );
+
+  const takeSpot = useCallback((cents: number) => {
+    setOverride(clampBid(cents));
+    setOpen(true);
+  }, []);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -185,171 +186,106 @@ export function LiveBoard({ initial }: { initial: Board }) {
     <>
       <LiveStrip board={board} />
 
-      <main className="mx-auto max-w-[940px] px-5">
+      <main className="mx-auto max-w-[940px] px-4 sm:px-5">
         {leader ? (
-          <div className="pt-6 sm:pt-8">
+          <div className="pt-4 sm:pt-6">
             <Champion row={leader} onTake={takeSpot} animate={leadChanged} />
           </div>
-        ) : null}
+        ) : (
+          <div className="mt-6 border border-rule bg-panel p-10 text-center">
+            <p className="text-[clamp(21px,5vw,32px)] font-semibold tracking-[-0.03em]">
+              The seat is empty.
+              <br className="sm:hidden" /> Be number one here for $1.
+            </p>
+          </div>
+        )}
 
-        <section className="border-b border-ink/15 pt-9 pb-7 sm:pt-11">
-          <div className="flex flex-col gap-7 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-[520px]">
-              <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-faint">
-                The seat is bought, not earned
-              </div>
-              <h1 className="text-[clamp(27px,3.8vw,38px)] font-semibold leading-[1.08] tracking-[-0.035em]">
-                {leader ? (
-                  <>
-                    They paid{" "}
-                    <span className="num text-gain">
-                      {formatCents(leader.totalCents)}
-                    </span>
-                    .<br />
-                    Get on this board for $1.
-                  </>
-                ) : (
-                  <>
-                    The seat is empty.
-                    <br />
-                    Be number one here for $1.
-                  </>
-                )}
-              </h1>
-              <p className="mt-3 text-[14.5px] leading-[1.5] text-ink-soft">
-                <b className="font-semibold text-ink">
-                  Every bid you place stays on your name.
-                </b>{" "}
-                Spend less than the leader and you take a lower seat, not
-                nothing.
-              </p>
-            </div>
-
-            <div className="md:text-right">
-              <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-faint">
-                Price of the seat
-              </div>
-              <div className="flex items-center gap-3 md:justify-end">
-                <Stepper label="Lower amount" onClick={() => step(-1)}>
-                  &minus;
-                </Stepper>
-                <span className="num flex items-baseline text-[clamp(36px,7vw,56px)] font-semibold tracking-[-0.035em] text-gain">
-                  <span aria-hidden="true">$</span>
-                  <input
-                    value={dollars}
-                    onChange={(e) =>
-                      setDraft(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))
-                    }
-                    onFocus={(e) => e.target.select()}
-                    onBlur={commitDraft}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        commitDraft();
-                        e.currentTarget.blur();
-                      }
-                    }}
-                    type="text"
-                    inputMode="numeric"
-                    aria-label="Bid amount in dollars"
-                    className="num border-0 bg-transparent p-0 text-left font-semibold tracking-[-0.035em] text-gain outline-none md:text-right"
-                    style={{ width: `${Math.max(1, dollars.length)}ch` }}
-                  />
-                </span>
-                <Stepper label="Raise amount" onClick={() => step(1)}>
-                  +
-                </Stepper>
-              </div>
-            </div>
+        {/* Compact pitch band. The form itself lives behind the button, so the
+            board clears the fold instead of sitting under a tall hero. */}
+        <div className="mt-4 flex flex-col gap-4 border-y border-ink/15 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+          <div className="min-w-0">
+            <p className="text-[clamp(17px,2.6vw,22px)] font-semibold leading-[1.2] tracking-[-0.025em]">
+              {leader ? (
+                <>
+                  They paid{" "}
+                  <span className="num text-gain">
+                    {formatCents(leader.totalCents)}
+                  </span>
+                  . Get on this board for $1.
+                </>
+              ) : (
+                <>Be number one here for $1.</>
+              )}
+            </p>
+            <p className="mt-1 text-[13px] text-ink-soft">
+              Every bid stays on your name. Spend less than the leader and you
+              take a lower seat, not nothing.
+            </p>
           </div>
 
-          <form
-            onSubmit={submit}
-            className="mt-7 flex flex-col gap-[10px] sm:flex-row"
-          >
-            <label className="flex h-[50px] flex-1 items-center gap-[10px] border border-rule bg-panel px-[14px] focus-within:border-ink">
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                className="flex-none text-ink-faint"
-                aria-hidden="true"
-              >
-                <circle cx="8" cy="8" r="6.5" />
-                <path d="M1.5 8h13M8 1.5a10 10 0 0 1 0 13 10 10 0 0 1 0-13" />
-              </svg>
-              <input
-                ref={urlRef}
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                type="text"
-                inputMode="url"
-                autoComplete="url"
-                aria-label="Your product URL or handle"
-                placeholder="Your product URL or @handle"
-                className="h-full w-full border-0 bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-faint"
-              />
-            </label>
+          <div className="flex flex-none items-center gap-3 sm:gap-4">
+            <div className="hidden sm:block sm:text-right">
+              <div className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
+                Seat price
+              </div>
+              <div className="num text-[22px] font-semibold tracking-[-0.03em] text-gain">
+                {formatCents(board.seatPriceCents)}
+              </div>
+            </div>
             <button
-              type="submit"
-              disabled={submitting}
-              className="h-[50px] bg-ink px-8 text-[15px] font-semibold tracking-[-0.01em] text-ground transition-colors hover:bg-gain disabled:opacity-60"
+              type="button"
+              onClick={() => setOpen(true)}
+              className="w-full bg-ink px-6 py-3 text-[14.5px] font-semibold tracking-[-0.01em] text-ground transition-colors hover:bg-gain sm:w-auto"
             >
-              {submitting ? "Opening checkout" : "Place bid"}
+              Add your site
             </button>
-          </form>
+          </div>
+        </div>
 
-          <label className="mt-[10px] flex h-[42px] items-center gap-[10px] border border-rule bg-panel px-[14px] focus-within:border-ink">
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              className="flex-none text-ink-faint"
-              aria-hidden="true"
-            >
-              <rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5" />
-              <circle cx="5.75" cy="6.25" r="1.1" />
-              <path d="M2.5 11.5l3.5-3 3 2.5 2-1.75 2.5 2.25" />
-            </svg>
-            <input
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
-              type="text"
-              inputMode="url"
-              aria-label="Logo image URL, optional"
-              placeholder="Logo image URL (optional). We use your favicon if you skip it."
-              className="h-full w-full border-0 bg-transparent text-[13.5px] text-ink outline-none placeholder:text-ink-faint"
-            />
-          </label>
+        <section id="board" className="scroll-mt-20 pt-6">
+          <div className="mb-2 flex items-baseline justify-between">
+            <h2 className="text-[16px] font-semibold tracking-[-0.02em]">
+              The board
+            </h2>
+            <span className="num text-[12.5px] text-ink-faint">
+              {formatCount(board.stats.entryCount)}{" "}
+              {board.stats.entryCount === 1 ? "entry" : "entries"}
+            </span>
+          </div>
 
-          {error ? (
-            <p className="mt-2 text-[13px] text-drop" role="alert">
-              {error}
-            </p>
-          ) : null}
-
-          <p className="mt-3 text-[12.5px] text-ink-faint">
-            One time payment. No refunds. You are buying a position on this page
-            and nothing else. Type any amount between $1 and $1,000. Already
-            listed? Enter the same URL and your bids stack.
-          </p>
-
-          {board.seatPriceCents > MAX_BID_CENTS ? (
-            <p className="mt-2 text-[12.5px] text-ink-soft">
-              The seat costs {formatCents(board.seatPriceCents)} and a single
-              payment is capped at {formatCents(MAX_BID_CENTS)}. Bid more than
-              once to keep climbing, since your total is what counts.
-            </p>
-          ) : null}
+          {chasers.length === 0 ? (
+            <div className="border-y border-rule py-10 text-center text-[14px] text-ink-faint">
+              {leader
+                ? "Nobody is chasing yet. Second place costs $1."
+                : "First place costs $1."}
+            </div>
+          ) : (
+            <>
+              <LedgerHead />
+              {visible.map((row, index) => (
+                <LedgerRow
+                  key={row.id}
+                  row={row}
+                  position={index + 2}
+                  onTake={takeSpot}
+                  dethroned={dropped.has(row.id)}
+                  animate={leadChanged}
+                />
+              ))}
+              {!showAll && chasers.length > 49 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAll(true)}
+                  className="mt-4 w-full border border-rule py-3 text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink"
+                >
+                  Show all {formatCount(board.rows.length)} entries
+                </button>
+              ) : null}
+            </>
+          )}
         </section>
 
-        <section className="grid grid-cols-1 gap-x-10 gap-y-7 border-b border-rule py-7 md:grid-cols-2">
+        <section className="mt-12 grid grid-cols-1 gap-x-10 gap-y-8 border-t border-ink/15 pt-8 md:grid-cols-2">
           <Panel title="Moving now">
             {board.movers.length === 0 ? (
               <Quiet>No clicks in the last hour.</Quiet>
@@ -392,56 +328,12 @@ export function LiveBoard({ initial }: { initial: Board }) {
           </Panel>
         </section>
 
-        <div
-          id="board"
-          className="mb-3 flex scroll-mt-20 items-baseline justify-between pt-8"
-        >
-          <h2 className="text-[15px] font-semibold tracking-[-0.01em]">
-            The board
-          </h2>
-          <span className="num text-[12.5px] text-ink-faint">
-            {formatCount(board.stats.entryCount)}{" "}
-            {board.stats.entryCount === 1 ? "entry" : "entries"}
-          </span>
-        </div>
-
-        {board.rows.length === 0 ? (
-          <div className="border-y border-rule py-12 text-center">
-            <p className="text-[15px] font-semibold">
-              The seat is empty. First to pay $1 takes it.
-            </p>
-          </div>
-        ) : (
-          <>
-            <LedgerHead />
-            {visible.map((row, index) => (
-              <LedgerRow
-                key={row.id}
-                row={row}
-                position={index + 2}
-                onTake={takeSpot}
-                dethroned={dropped.has(row.id)}
-                animate={leadChanged}
-              />
-            ))}
-            {!showAll && chasers.length > 49 ? (
-              <button
-                type="button"
-                onClick={() => setShowAll(true)}
-                className="mt-4 w-full border border-rule py-3 text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink"
-              >
-                Show all {formatCount(board.rows.length)} entries
-              </button>
-            ) : null}
-          </>
-        )}
-
         <section id="reigns" className="mt-10 scroll-mt-20">
-          <div className="mb-3 flex items-baseline justify-between px-[2px]">
+          <div className="mb-3 flex items-baseline justify-between gap-4">
             <h2 className="text-[15px] font-semibold tracking-[-0.01em]">
               Longest reigns
             </h2>
-            <span className="text-[12.5px] text-ink-faint">
+            <span className="text-right text-[12.5px] text-ink-faint">
               The one board you cannot buy outright
             </span>
           </div>
@@ -475,6 +367,24 @@ export function LiveBoard({ initial }: { initial: Board }) {
           </div>
         </section>
       </main>
+
+      <BidDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        url={url}
+        setUrl={setUrl}
+        logoUrl={logoUrl}
+        setLogoUrl={setLogoUrl}
+        dollars={dollars}
+        setDraft={setDraft}
+        commitDraft={commitDraft}
+        step={step}
+        amount={amount}
+        seatPriceCents={board.seatPriceCents}
+        submitting={submitting}
+        error={error}
+        onSubmit={submit}
+      />
     </>
   );
 }
@@ -497,7 +407,7 @@ function Panel({
 }
 
 function Quiet({ children }: { children: React.ReactNode }) {
-  return <li className="py-2 text-[13.5px] text-ink-faint">{children}</li>;
+  return <li className="py-2 text-[13px] text-ink-faint">{children}</li>;
 }
 
 function Dot({ src }: { src: string | null }) {
@@ -513,45 +423,24 @@ function Dot({ src }: { src: string | null }) {
   );
 }
 
-function Stepper({
-  label,
-  onClick,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className="flex h-[34px] w-[34px] items-center justify-center rounded-full border border-rule bg-panel text-[17px] leading-none text-ink-soft transition-colors hover:border-ink hover:text-ink"
-    >
-      {children}
-    </button>
-  );
-}
-
 function LiveStrip({ board }: { board: Board }) {
   const { online, visitorsTotal, paidToDateCents } = board.stats;
   return (
     <div className="border-b border-rule bg-panel">
-      <div className="mx-auto flex min-h-[38px] max-w-[940px] flex-wrap items-center justify-center gap-2 px-5 py-2 text-[12.5px] tracking-[0.01em] text-ink-soft">
+      <div className="mx-auto flex min-h-[34px] max-w-[940px] flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 py-[6px] text-[12px] tracking-[0.01em] text-ink-soft sm:px-5 sm:text-[12.5px]">
         <span className="relative h-[6px] w-[6px] flex-none rounded-full bg-gain">
           <span className="pulse-ring absolute -inset-[3px] rounded-full bg-gain opacity-25" />
         </span>
         <span>
           <b className="num font-semibold text-ink">{formatCount(online)}</b>{" "}
-          reading this now
+          reading now
         </span>
         <span className="text-rule">·</span>
         <span>
           <b className="num font-semibold text-ink">
             {formatCount(visitorsTotal)}
           </b>{" "}
-          visitors since launch
+          visitors
         </span>
         <span className="text-rule">·</span>
         <span>

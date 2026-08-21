@@ -126,5 +126,45 @@ export const visits = pgTable(
   ],
 );
 
+/**
+ * Paid edge. Every board on this trend sells a number; these sell drama, which
+ * is what produces the posts that bring people back.
+ */
+export const powerupKind = pgEnum("powerup_kind", [
+  "seat_lock",
+  "challenge",
+  "last_stand",
+  "spotlight",
+]);
+
+export const powerups = pgTable(
+  "powerups",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entryId: uuid("entry_id")
+      .notNull()
+      .references(() => entries.id, { onDelete: "cascade" }),
+    kind: powerupKind("kind").notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    /** Same idempotency guarantee the bids table has. */
+    stripeSessionId: text("stripe_session_id").notNull(),
+    /** When the effect stops. Null means it has no clock. */
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    /** Challenge only: who is being called out. */
+    targetEntryId: uuid("target_entry_id"),
+    /** Last stand only: set when the escrowed amount converts to a bid. */
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("powerups_stripe_session_id_key").on(t.stripeSessionId),
+    index("powerups_active_idx").on(t.kind, t.expiresAt.desc()),
+    index("powerups_entry_idx").on(t.entryId),
+  ],
+);
+
 export type Entry = typeof entries.$inferSelect;
+export type Powerup = typeof powerups.$inferSelect;
 export type Bid = typeof bids.$inferSelect;

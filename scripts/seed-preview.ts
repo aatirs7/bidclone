@@ -35,16 +35,16 @@ if (!url.includes("cheapseat_dev")) {
 const db = drizzle(new Pool({ connectionString: url }), { schema });
 
 const SAMPLE = [
-  ["linear.app", "Linear", "Purpose built for product teams. Plan, build, and ship software with a tool that stays out of the way.", 841200, 6677],
-  ["cal.com", "Cal.com", "Scheduling infrastructure you can host yourself. Connect your calendar and let people book real availability.", 839000, 4820],
-  ["x.com/levelsio", "@levelsio", "Twelve startups in twelve months, still shipping. Follow along for the numbers nobody else publishes.", 524000, 3914],
-  ["resend.com", "Resend", "Email for developers. A simple API, real deliverability, and templates that render the same everywhere.", 211000, 2201],
-  ["railway.app", "Railway", "Deploy without touching infrastructure. Push code and it runs.", 145500, 1884],
-  ["plausible.io", "Plausible Analytics", "Privacy friendly analytics without cookies. Lightweight, open source, and legible on one screen.", 34000, 1102],
-  ["tally.so", "Tally", "Forms that behave like documents. Free for almost everything.", 22000, 640],
-  ["raycast.com", "Raycast", "A launcher that replaces half your menu bar. Extensions for everything else.", 12500, 388],
-  ["posthog.com", "PostHog", "Product analytics, session replay, and feature flags in one place.", 4500, 214],
-  ["bun.sh", "Bun", "A fast JavaScript runtime, bundler, and package manager in a single binary.", 100, 37],
+  ["linear.app", "Linear", "Purpose built for product teams. Plan, build, and ship software with a tool that stays out of the way.", 500, 412],
+  ["cal.com", "Cal.com", "Scheduling infrastructure you can host yourself. Connect your calendar and let people book real availability.", 450, 388],
+  ["x.com/levelsio", "@levelsio", "Twelve startups in twelve months, still shipping. Follow along for the numbers nobody else publishes.", 400, 341],
+  ["resend.com", "Resend", "Email for developers. A simple API, real deliverability, and templates that render the same everywhere.", 350, 260],
+  ["railway.app", "Railway", "Deploy without touching infrastructure. Push code and it runs.", 300, 188],
+  ["plausible.io", "Plausible Analytics", "Privacy friendly analytics without cookies. Lightweight, open source, and legible on one screen.", 250, 142],
+  ["tally.so", "Tally", "Forms that behave like documents. Free for almost everything.", 200, 96],
+  ["raycast.com", "Raycast", "A launcher that replaces half your menu bar. Extensions for everything else.", 150, 61],
+  ["posthog.com", "PostHog", "Product analytics, session replay, and feature flags in one place.", 100, 34],
+  ["bun.sh", "Bun", "A fast JavaScript runtime, bundler, and package manager in a single binary.", 100, 12],
 ] as const;
 
 async function clear() {

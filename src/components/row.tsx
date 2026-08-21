@@ -16,7 +16,7 @@ import { ReignClock } from "./reign-clock";
  * clicks and total.
  */
 export const COLUMNS =
-  "grid grid-cols-[2rem_minmax(0,1fr)_4.5rem_5.5rem] items-center gap-x-3 md:grid-cols-[2.5rem_minmax(0,1fr)_5.5rem_4.5rem_6rem_6.5rem_auto] md:gap-x-4";
+  "grid grid-cols-[1.75rem_minmax(0,1fr)_5rem] items-center gap-x-2 sm:grid-cols-[2rem_minmax(0,1fr)_4.5rem_5.5rem] sm:gap-x-3 md:grid-cols-[2.5rem_minmax(0,1fr)_5.5rem_4.5rem_6rem_6.5rem_auto] md:gap-x-4";
 
 export function LedgerHead() {
   return (
@@ -25,7 +25,7 @@ export function LedgerHead() {
     >
       <div>Rank</div>
       <div>Entry</div>
-      <div className="text-right">Clicks</div>
+      <div className="hidden text-right sm:block">Clicks</div>
       <div className="hidden text-right md:block">CPC</div>
       <div className="hidden text-right md:block">Held</div>
       <div className="text-right">Total</div>
@@ -135,7 +135,7 @@ export function LedgerRow({
 
       <Link
         href={`/e/${row.id}`}
-        className="num self-start pt-[2px] text-right text-[12.5px] text-ink-soft hover:text-ink hover:underline"
+        className="num hidden self-start pt-[2px] text-right text-[12.5px] text-ink-soft hover:text-ink hover:underline sm:block"
       >
         {formatCount(row.clickCount)}
       </Link>
@@ -158,13 +158,19 @@ export function LedgerRow({
         )}
       </div>
 
-      <div
-        className={`num self-start pt-[1px] text-right font-semibold tracking-[-0.02em] ${
-          featured ? "text-[17px]" : "text-[14px]"
+      <button
+        type="button"
+        onClick={() => onTake(cost)}
+        aria-label={`Take position ${position} for ${formatCents(cost)}`}
+        className={`num block w-full self-start pt-[1px] text-right font-semibold tracking-[-0.02em] md:pointer-events-none ${
+          featured ? "text-[16px] sm:text-[17px]" : "text-[13.5px] sm:text-[14px]"
         } ${lead ? "text-gain" : ""}`}
       >
         <Money cents={row.totalCents} animate={animate && lead} />
-      </div>
+        <span className="mt-[1px] block text-[10.5px] font-medium text-ink-faint md:hidden">
+          Take for {formatCents(cost)}
+        </span>
+      </button>
 
       <div className="hidden self-start md:block">
         <button
