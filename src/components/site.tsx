@@ -3,16 +3,19 @@ import Link from "next/link";
 export function Masthead() {
   return (
     <header className="border-b border-rule">
-      <div className="mx-auto flex h-15 max-w-[940px] items-center justify-between px-5">
+      <div className="mx-auto flex max-w-[940px] flex-col items-center gap-2 px-5 py-3 sm:h-15 sm:flex-row sm:justify-between sm:gap-0 sm:py-0">
         <Link href="/" className="flex items-center gap-[9px] text-base font-semibold tracking-[-0.02em]">
-          <span className="flex h-5 w-5 flex-col justify-center gap-[2.5px] rounded-[3px] bg-ink px-1">
-            <i className="block h-[2px] w-full rounded-[1px] bg-ground" />
-            <i className="block h-[2px] w-[65%] rounded-[1px] bg-ground" />
-            <i className="block h-[2px] w-[35%] rounded-[1px] bg-ground" />
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt=""
+            width={22}
+            height={22}
+            className="h-[22px] w-[22px] flex-none"
+          />
           cheapseat<span className="font-normal text-ink-faint">.lol</span>
         </Link>
-        <nav className="flex gap-[22px] text-sm">
+        <nav className="flex gap-5 text-sm sm:gap-[22px]">
           <Link href="/#board" className="text-ink-soft transition-colors hover:text-ink">
             Board
           </Link>

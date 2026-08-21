@@ -43,16 +43,25 @@ const db = drizzle(new Pool({ connectionString: url }), { schema });
 
 /** Amounts chosen to keep the seat cheap enough that a newcomer is not scared off. */
 const HOUSE = [
-  ["sehat.dev", 350, 22],
-  ["mentorreach.com", 200, 14],
-  ["ilmy.dev", 100, 7],
+  ["mentorreach.com", 350, 22],
+  ["trajectorycoaches.com", 200, 14],
+  ["ultrase7en.com", 100, 7],
 ] as const;
 
 async function clear() {
-  const urls = HOUSE.map(([u]) => normalizeUrl(u)!).filter(Boolean);
+  // Every house entry is identifiable by its bid stamp, so a previous list is
+  // still removable after the list here changes.
+  const seeded = await db
+    .select({ id: bids.entryId })
+    .from(bids)
+    .where(like(bids.stripeSessionId, "house_seed_%"));
+  const ids = [...new Set(seeded.map((r) => r.id))];
+
   await db.delete(bids).where(like(bids.stripeSessionId, "house_seed_%"));
   // Entry deletion cascades to its clicks.
-  await db.delete(entries).where(inArray(entries.url, urls));
+  if (ids.length > 0) {
+    await db.delete(entries).where(inArray(entries.id, ids));
+  }
   await db.transaction(async (tx) => {
     await settleSeat(tx);
   });

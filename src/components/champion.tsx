@@ -29,7 +29,8 @@ export function Champion({
       : null;
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-gain/30 bg-gradient-to-br from-gain-wash via-panel to-panel shadow-[0_1px_2px_rgba(21,23,26,0.04),0_12px_32px_-12px_rgba(11,122,75,0.18)]">
+    <section className="seat-glow relative overflow-hidden rounded-2xl border border-gain/30 bg-gradient-to-br from-gain-wash via-panel to-panel shadow-[0_1px_2px_rgba(21,23,26,0.04),0_12px_32px_-12px_rgba(11,122,75,0.18)]">
+      <span aria-hidden="true" className="seat-sheen" />
       {/* A wash of the entry's own color. The chrome stays disciplined and the
           brand supplies the only real color on the page. */}
       <div
@@ -38,13 +39,11 @@ export function Champion({
         style={{ background: brandGradient(row.url) }}
       />
 
-      <div className="relative flex flex-col gap-4 p-5 sm:gap-6 sm:p-8 md:flex-row md:items-center md:gap-9">
-        <div className="flex items-center gap-4 md:contents">
-          <BrandMark row={row} />
-        </div>
+      <div className="relative flex flex-col items-center gap-4 p-5 text-center sm:gap-6 sm:p-8 md:flex-row md:items-center md:gap-9 md:text-left">
+        <BrandMark row={row} />
 
         <div className="min-w-0 flex-1">
-          <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gain">
+          <div className="mb-2 flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gain md:justify-start">
             <span className="relative flex h-[6px] w-[6px] rounded-full bg-gain">
               <span className="pulse-ring absolute -inset-[3px] rounded-full bg-gain opacity-25" />
             </span>
@@ -63,12 +62,12 @@ export function Champion({
           </h2>
 
           {row.tagline ? (
-            <p className="mt-2 max-w-[46ch] text-[14.5px] leading-[1.5] text-ink-soft">
+            <p className="mx-auto mt-2 max-w-[46ch] text-[14.5px] leading-[1.5] text-ink-soft md:mx-0">
               {row.tagline}
             </p>
           ) : null}
 
-          <dl className="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-3 text-[12.5px] text-ink-faint sm:mt-5 sm:gap-x-7">
+          <dl className="mt-4 flex flex-wrap items-baseline justify-center gap-x-5 gap-y-3 text-[12.5px] text-ink-faint sm:mt-5 sm:gap-x-7 md:justify-start">
             <Stat label="Paid">
               <span className="num text-[clamp(24px,5vw,36px)] font-semibold tracking-[-0.03em] text-gain">
                 <Money cents={row.totalCents} animate={animate} />
@@ -99,7 +98,7 @@ export function Champion({
           </dl>
         </div>
 
-        <div className="flex-none md:self-end">
+        <div className="w-full flex-none md:w-auto md:self-end">
           <button
             type="button"
             onClick={() => onTake(cost)}

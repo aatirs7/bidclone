@@ -13,7 +13,8 @@ import {
 import { formatAgo, formatDuration } from "@/lib/time";
 import { BidDialog } from "./bid-dialog";
 import { Champion } from "./champion";
-import { LedgerHead, LedgerRow } from "./row";
+import { PowerupStrip } from "./powerup-strip";
+import { BoardEntry } from "./row";
 
 const POLL_MS = 10_000;
 const PULSE_MS = 60_000;
@@ -200,47 +201,46 @@ export function LiveBoard({ initial }: { initial: Board }) {
           </div>
         )}
 
-        {/* Compact pitch band. The form itself lives behind the button, so the
-            board clears the fold instead of sitting under a tall hero. */}
-        <div className="mt-4 flex flex-col gap-4 border-y border-ink/15 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-          <div className="min-w-0">
-            <p className="text-[clamp(17px,2.6vw,22px)] font-semibold leading-[1.2] tracking-[-0.025em]">
-              {leader ? (
-                <>
-                  They paid{" "}
-                  <span className="num text-gain">
-                    {formatCents(leader.totalCents)}
-                  </span>
-                  . Get on this board for $1.
-                </>
-              ) : (
-                <>Be number one here for $1.</>
-              )}
-            </p>
-            <p className="mt-1 text-[13px] text-ink-soft">
-              Every bid stays on your name. Spend less than the leader and you
-              take a lower seat, not nothing.
-            </p>
-          </div>
+        {/* Compact pitch band, centered. The form itself lives behind these
+            buttons, so the board clears the fold. */}
+        <div className="mt-5 border-y border-ink/15 py-5 text-center">
+          <p className="text-[clamp(18px,2.8vw,24px)] font-semibold leading-[1.2] tracking-[-0.025em]">
+            {leader ? (
+              <>
+                They paid{" "}
+                <span className="num text-gain">
+                  {formatCents(leader.totalCents)}
+                </span>
+                . Get on this board for $1.
+              </>
+            ) : (
+              <>Be number one here for $1.</>
+            )}
+          </p>
+          <p className="mx-auto mt-[6px] max-w-[54ch] text-[13.5px] text-ink-soft">
+            Every bid stays on your name. Spend less than the leader and you
+            take a lower seat, not nothing.
+          </p>
 
-          <div className="flex flex-none items-center gap-3 sm:gap-4">
-            <div className="hidden sm:block sm:text-right">
-              <div className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
-                Seat price
-              </div>
-              <div className="num text-[22px] font-semibold tracking-[-0.03em] text-gain">
-                {formatCents(board.seatPriceCents)}
-              </div>
-            </div>
+          <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button
               type="button"
-              onClick={() => setOpen(true)}
-              className="w-full bg-ink px-6 py-3 text-[14.5px] font-semibold tracking-[-0.01em] text-ground transition-colors hover:bg-gain sm:w-auto"
+              onClick={() => takeSpot(board.seatPriceCents)}
+              className="w-full bg-ink px-7 py-3 text-[14.5px] font-semibold tracking-[-0.01em] text-ground transition-colors hover:bg-gain sm:w-auto"
             >
-              Add your site
+              Take the seat, {formatCents(board.seatPriceCents)}
+            </button>
+            <button
+              type="button"
+              onClick={() => takeSpot(MIN_BID_CENTS)}
+              className="w-full border border-rule px-7 py-3 text-[14.5px] font-semibold tracking-[-0.01em] text-ink-soft transition-colors hover:border-ink hover:text-ink sm:w-auto"
+            >
+              Join the board for $1
             </button>
           </div>
         </div>
+
+        <PowerupStrip />
 
         <section id="board" className="scroll-mt-20 pt-6">
           <div className="mb-2 flex items-baseline justify-between">
@@ -261,15 +261,13 @@ export function LiveBoard({ initial }: { initial: Board }) {
             </div>
           ) : (
             <>
-              <LedgerHead />
               {visible.map((row, index) => (
-                <LedgerRow
+                <BoardEntry
                   key={row.id}
                   row={row}
                   position={index + 2}
                   onTake={takeSpot}
                   dethroned={dropped.has(row.id)}
-                  animate={leadChanged}
                 />
               ))}
               {!showAll && chasers.length > 49 ? (

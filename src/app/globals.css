@@ -98,3 +98,84 @@ input:focus-visible {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* The seat holder gets a light that travels its border, and a slow sheen
+   across the face. Both are decoration only and both stop under
+   prefers-reduced-motion, which the block at the end of this file enforces. */
+@property --seat-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes seat-orbit {
+  to {
+    --seat-angle: 360deg;
+  }
+}
+
+@keyframes seat-sheen {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(320%) skewX(-18deg);
+  }
+}
+
+.seat-glow {
+  position: relative;
+  isolation: isolate;
+}
+
+.seat-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--seat-angle),
+    transparent 0turn,
+    transparent 0.62turn,
+    var(--color-gain) 0.78turn,
+    #7fd8b0 0.85turn,
+    transparent 0.92turn
+  );
+  /* Masked to the border only, so the face of the card stays clean. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: seat-orbit 6s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.seat-sheen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.seat-sheen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  animation: seat-sheen 5.5s ease-in-out infinite;
+}

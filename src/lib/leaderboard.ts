@@ -16,6 +16,7 @@ export type BoardRow = {
   /** ISO string while this entry holds the seat, otherwise null. */
   reignStartedAt: string | null;
   longestReignSeconds: number;
+  lastBidAt: string | null;
 };
 
 export type Mover = {
@@ -98,6 +99,7 @@ const loadRows = ttlCache(5_000, async (): Promise<BoardRow[]> => {
       clickCount: entries.clickCount,
       reignStartedAt: entries.reignStartedAt,
       longestReignSeconds: entries.longestReignSeconds,
+      lastBidAt: entries.lastBidAt,
     })
     .from(entries)
     .where(and(eq(entries.status, "active"), gt(entries.totalCents, 0)))
@@ -107,6 +109,7 @@ const loadRows = ttlCache(5_000, async (): Promise<BoardRow[]> => {
   return rows.map((r) => ({
     ...r,
     reignStartedAt: r.reignStartedAt?.toISOString() ?? null,
+    lastBidAt: r.lastBidAt?.toISOString() ?? null,
   }));
 });
 
