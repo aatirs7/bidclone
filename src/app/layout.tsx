@@ -39,6 +39,8 @@ export const metadata: Metadata = {
       "Take the top seat from whoever is sitting in it. New seats start at $1, bids stack, and the clock starts the moment you land.",
     type: "website",
   },
+  // Next emits this from the opengraph-image convention regardless, but
+  // declaring it keeps the intent visible.
   twitter: { card: "summary_large_image" },
 };
 
