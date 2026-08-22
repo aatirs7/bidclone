@@ -25,7 +25,6 @@ import { Champion } from "./champion";
 import { PowerupStrip } from "./powerup-strip";
 import { PowerupShowcase } from "./powerup-showcase";
 import { PowerupPromo } from "./powerup-promo";
-import { PowerupPopup } from "./powerup-popup";
 import { BoardEntry } from "./row";
 
 const POLL_MS = 10_000;
@@ -513,9 +512,9 @@ export function LiveBoard({ initial }: { initial: Board }) {
         />
       </div>
 
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
         <PowerupPromo kind="seat_lock" onPick={pickPowerup} />
-        <PowerupPromo kind="spotlight" onPick={pickPowerup} />
+        <PowerupPromo kind="smoke_screen" onPick={pickPowerup} />
       </div>
 
       <section id="board" className="scroll-mt-20 pt-6">
@@ -570,8 +569,8 @@ export function LiveBoard({ initial }: { initial: Board }) {
 
       <PowerupShowcase onPick={pickPowerup} />
 
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <PowerupPromo kind="challenge" onPick={pickPowerup} />
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+        <PowerupPromo kind="siege" onPick={pickPowerup} />
         <PowerupPromo kind="last_stand" onPick={pickPowerup} />
       </div>
 
@@ -713,8 +712,6 @@ export function LiveBoard({ initial }: { initial: Board }) {
           ))}
         </div>
       </aside>
-
-      <PowerupPopup onPick={pickPowerup} />
 
       <BidModal
         open={chooserOpen}

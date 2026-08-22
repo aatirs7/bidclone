@@ -68,7 +68,7 @@ export function PowerupStrip({
               {/* Explains itself without needing the panel opened. */}
               <span
                 role="tooltip"
-                className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-[210px] -translate-x-1/2 rounded-lg border border-rule bg-panel p-2 text-left text-[11.5px] font-normal leading-[1.4] text-ink-soft opacity-0 shadow-lg transition-opacity duration-150 group-hover/pill:opacity-100"
+                className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-[210px] -translate-x-1/2 rounded-lg border border-rule bg-panel p-2 text-left text-[11.5px] font-normal leading-[1.4] text-ink-soft opacity-0 shadow-lg transition-opacity duration-150 group-hover/pill:opacity-100 sm:block"
               >
                 <b
                   className="block font-semibold"

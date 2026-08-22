@@ -28,14 +28,14 @@ export function PowerupShowcase({
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
         {POWERUP_LIST.map((p, i) => (
           <button
             key={p.kind}
             type="button"
             onClick={() => onPick?.(p.kind)}
             style={{ animationDelay: `${i * 70}ms` }}
-            className="pu-pop-in group relative flex flex-col items-center overflow-hidden rounded-2xl border bg-panel p-4 text-center transition-all duration-200 hover:-translate-y-1 sm:p-5"
+            className="pu-pop-in group relative flex flex-col items-center overflow-hidden rounded-2xl border bg-panel p-3 text-center transition-all duration-200 hover:-translate-y-1 sm:p-5"
           >
             {/* The card's own colour, held to a wash so the page stays calm. */}
             <span
@@ -50,7 +50,7 @@ export function PowerupShowcase({
             />
 
             <span
-              className="pu-float relative flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg transition-transform duration-200 group-hover:scale-110"
+              className="pu-float relative flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg transition-transform duration-200 group-hover:scale-110 sm:h-14 sm:w-14"
               style={{
                 background: `linear-gradient(140deg, ${p.accent}, ${p.accentTo})`,
                 boxShadow: `0 8px 20px -8px ${p.accent}`,
@@ -68,8 +68,9 @@ export function PowerupShowcase({
             <h3 className="relative mt-[2px] text-[15px] font-semibold tracking-[-0.015em]">
               {p.name}
             </h3>
-            <p className="relative mt-1 text-[12.5px] leading-[1.45] text-ink-soft">
-              {p.blurb}
+            <p className="relative mt-1 text-[11.5px] leading-[1.4] text-ink-soft sm:text-[12.5px] sm:leading-[1.45]">
+              {p.tease}
+              <span className="hidden sm:inline"> {p.blurb}</span>
             </p>
 
             <span
