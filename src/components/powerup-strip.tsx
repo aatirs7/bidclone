@@ -14,7 +14,9 @@ import { formatCents } from "@/lib/money";
 export function PowerupStrip({
   open: controlledOpen,
   onOpenChange,
+  onPick,
 }: {
+  onPick?: (kind: string) => void;
   /** Supplied when something else on the page needs to open the menu. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -48,17 +50,33 @@ export function PowerupStrip({
           {POWERUP_LIST.map((p) => (
             <span
               key={p.kind}
-              title={p.tease}
-              className="flex items-center gap-[6px] rounded-full border px-[10px] py-[4px] text-[12.5px] font-medium text-ink transition-colors"
+              className="group/pill relative flex items-center gap-[6px] rounded-full border px-[10px] py-[4px] text-[12.5px] font-medium text-ink transition-all hover:-translate-y-[1px]"
               style={{
-                borderColor: `${p.accent}55`,
-                background: `${p.accent}10`,
+                borderColor: `${p.accent}66`,
+                background: `${p.accent}14`,
               }}
             >
               <PowerupIcon kind={p.kind} style={{ color: p.accent }} />
               {p.name}
-              <span className="num font-semibold text-gain">
+              <span
+                className="num font-semibold"
+                style={{ color: p.accent }}
+              >
                 {formatCents(p.priceCents)}
+              </span>
+
+              {/* Explains itself without needing the panel opened. */}
+              <span
+                role="tooltip"
+                className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-[210px] -translate-x-1/2 rounded-lg border border-rule bg-panel p-2 text-left text-[11.5px] font-normal leading-[1.4] text-ink-soft opacity-0 shadow-lg transition-opacity duration-150 group-hover/pill:opacity-100"
+              >
+                <b
+                  className="block font-semibold"
+                  style={{ color: p.accent }}
+                >
+                  {p.hook}
+                </b>
+                {p.blurb}
               </span>
             </span>
           ))}
@@ -97,34 +115,51 @@ export function PowerupStrip({
         aria-hidden={!open}
       >
         <div className="overflow-hidden">
-          <div className="grid grid-cols-2 gap-2 border-t border-rule p-3 sm:gap-3 sm:p-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 border-t border-rule p-3 sm:gap-3 sm:p-4 lg:grid-cols-3">
             {POWERUP_LIST.map((p) => (
-              <div
+              <button
                 key={p.kind}
-                className="group/card relative flex flex-col items-center overflow-hidden rounded-xl border border-rule bg-ground px-3 py-4 text-center transition-all duration-200 hover:-translate-y-[2px] hover:border-ink/30"
+                type="button"
+                onClick={() => onPick?.(p.kind)}
+                className="group/card relative flex flex-col items-center overflow-hidden rounded-xl border bg-panel px-3 py-4 text-center transition-all duration-200 hover:-translate-y-[2px]"
+                style={{ borderColor: `${p.accent}33` }}
               >
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute -top-8 left-1/2 h-20 w-20 -translate-x-1/2 rounded-full bg-ink opacity-[0.05] blur-2xl transition-opacity duration-300 group-hover/card:opacity-[0.1]"
+                  className="pu-glow pointer-events-none absolute -top-8 left-1/2 h-20 w-20 -translate-x-1/2 rounded-full blur-2xl"
+                  style={{ background: p.accent }}
                 />
-                <span className="relative flex h-11 w-11 items-center justify-center rounded-full border border-rule bg-panel text-ink-soft transition-transform duration-200 group-hover/card:scale-110">
-                  <PowerupIcon kind={p.kind} size={20} />
+                <span
+                  className="pu-float relative flex h-11 w-11 items-center justify-center rounded-xl text-white transition-transform duration-200 group-hover/card:scale-110"
+                  style={{
+                    background: `linear-gradient(140deg, ${p.accent}, ${p.accentTo})`,
+                    boxShadow: `0 8px 18px -8px ${p.accent}`,
+                  }}
+                >
+                  <PowerupIcon kind={p.kind} size={19} />
                 </span>
-                <h3 className="relative mt-3 text-[13.5px] font-semibold tracking-[-0.01em]">
+                <span
+                  className="relative mt-2 text-[9.5px] font-semibold uppercase tracking-[0.14em]"
+                  style={{ color: p.accent }}
+                >
+                  {p.hook}
+                </span>
+                <h3 className="relative mt-[1px] text-[13.5px] font-semibold">
                   {p.name}
                 </h3>
-                <span className="num relative mt-[2px] text-[15px] font-semibold tracking-[-0.02em] text-gain">
+                <span
+                  className="relative mt-[2px] rounded-full px-[10px] py-[2px] text-[12px] font-semibold text-white"
+                  style={{
+                    background: `linear-gradient(120deg, ${p.accent}, ${p.accentTo})`,
+                  }}
+                >
                   {formatCents(p.priceCents)}
                 </span>
-                <p className="relative mt-2 text-[12px] leading-[1.45] text-ink-soft">
+                <p className="relative mt-2 text-[12px] leading-[1.4] text-ink-soft">
                   {p.blurb}
                 </p>
-              </div>
+              </button>
             ))}
-            <p className="col-span-2 px-1 text-center text-[11.5px] text-ink-faint lg:col-span-4">
-              Power-ups go live alongside the board. Everything they do is
-              visible on this page, so nobody has to take our word for it.
-            </p>
           </div>
         </div>
       </div>

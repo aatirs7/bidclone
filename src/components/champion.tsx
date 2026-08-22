@@ -3,7 +3,12 @@
 import Link from "next/link";
 
 import type { BoardRow } from "@/lib/leaderboard";
-import { costToPass, formatCents, formatCount } from "@/lib/money";
+import {
+  costToPassWith,
+  formatCents,
+  formatCount,
+  isHidden,
+} from "@/lib/money";
 import { brandGradient } from "@/lib/brand";
 import { Money } from "./money";
 import { ReignClock } from "./reign-clock";
@@ -23,7 +28,8 @@ export function Champion({
   onTake: (cents: number) => void;
   animate: boolean;
 }) {
-  const cost = costToPass(row.totalCents);
+  const cost = costToPassWith(row.totalCents, row.activePowerups);
+  const hidden = isHidden(row.activePowerups);
   const cpc =
     row.clickCount > 0
       ? formatCents(Math.round(row.totalCents / row.clickCount))
@@ -81,7 +87,11 @@ export function Champion({
           <dl className="mt-3 flex flex-wrap items-baseline justify-center gap-x-5 gap-y-2 text-[12.5px] text-ink-faint sm:gap-x-6">
             <Stat label="Paid">
               <span className="num text-[clamp(23px,3.8vw,30px)] font-semibold tracking-[-0.03em] text-gain">
-                <Money cents={row.totalCents} animate={animate} />
+                {hidden ? (
+                  <span className="text-ink-faint">$&bull;&bull;&bull;</span>
+                ) : (
+                  <Money cents={row.totalCents} animate={animate} />
+                )}
               </span>
             </Stat>
             {row.reignStartedAt ? (

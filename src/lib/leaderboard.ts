@@ -2,7 +2,7 @@ import { and, desc, eq, gt, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { bids, clicks, entries, powerups, visits } from "@/db/schema";
-import { costToPass, MIN_BID_CENTS } from "./money";
+import { costToPassWith, MIN_BID_CENTS } from "./money";
 
 export type BoardRow = {
   id: string;
@@ -248,7 +248,9 @@ export async function getBoard(): Promise<Board> {
     feed,
     wall,
     stats,
-    seatPriceCents: rows[0] ? costToPass(rows[0].totalCents) : MIN_BID_CENTS,
+    seatPriceCents: rows[0]
+      ? costToPassWith(rows[0].totalCents, rows[0].activePowerups)
+      : MIN_BID_CENTS,
   };
 }
 

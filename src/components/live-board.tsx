@@ -16,7 +16,11 @@ import { brandGradient } from "@/lib/brand";
 import { ordinal } from "@/lib/ordinal";
 import { PowerupIcon } from "./powerup-icon";
 import { BidModal } from "./bid-modal";
-import { isPowerupKind, type PowerupKind } from "@/lib/powerups";
+import {
+  POWERUP_LIST,
+  isPowerupKind,
+  type PowerupKind,
+} from "@/lib/powerups";
 import { Champion } from "./champion";
 import { PowerupStrip } from "./powerup-strip";
 import { PowerupShowcase } from "./powerup-showcase";
@@ -267,7 +271,49 @@ export function LiveBoard({ initial }: { initial: Board }) {
   const visible = showAll ? chasers : chasers.slice(0, 49);
 
   return (
-    <main className="mx-auto max-w-[940px] px-4 sm:px-5">
+    <div className="mx-auto flex w-full justify-center gap-6 px-4 sm:px-5 xl:px-8">
+      <aside className="hidden w-[210px] flex-none pt-24 xl:block">
+        <div className="sticky top-6 space-y-3">
+          <RailHeading>Happening now</RailHeading>
+          <div className="rounded-xl border border-rule bg-panel p-3">
+            {board.feed.length === 0 ? (
+              <p className="text-[12px] text-ink-faint">
+                Nothing has been paid yet.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {board.feed.slice(0, 5).map((item) => (
+                  <li key={item.id} className="flex items-center gap-2">
+                    <Dot src={item.faviconUrl} />
+                    <span className="min-w-0 flex-1 truncate text-[12px] font-medium">
+                      {item.displayName}
+                    </span>
+                    <span className="num flex-none text-[11px] text-gain">
+                      {item.rank ? `#${item.rank}` : "new"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <RailHeading>The wall</RailHeading>
+          <Link
+            href="/wall"
+            className="block rounded-xl border border-rule bg-panel p-3 transition-colors hover:border-ink/25"
+          >
+            <p className="text-[12px] leading-[1.45] text-ink-soft">
+              <b className="font-semibold text-ink">
+                {formatCount(board.wall.length)}
+              </b>{" "}
+              {board.wall.length === 1 ? "name has" : "names have"} held the
+              seat. A plate here cannot be taken down.
+            </p>
+          </Link>
+        </div>
+      </aside>
+
+      <main className="w-full max-w-[940px] min-w-0">
       <LivePill board={board} />
 
       <section className="pt-5 text-center sm:pt-6">
@@ -311,8 +357,10 @@ export function LiveBoard({ initial }: { initial: Board }) {
           </span>
         </h1>
 
-        <p className="mx-auto mt-3 max-w-[600px] text-[13.5px] leading-[1.45] text-ink-soft">
-          <b className="font-semibold text-ink">New seats start at $1.</b>{" "}
+        <p className="mt-3 text-[15px] font-semibold tracking-[-0.01em]">
+          New seats start at $1.
+        </p>
+        <p className="mx-auto mt-1 max-w-[600px] text-[13.5px] leading-[1.45] text-ink-soft">
           Paying less than the leader still puts you on the board, at whatever
           seat that bid can take. Every bid stays on your name.
         </p>
@@ -458,7 +506,11 @@ export function LiveBoard({ initial }: { initial: Board }) {
       )}
 
       <div data-powerups className="hidden scroll-mt-24 md:block">
-        <PowerupStrip open={powerupsOpen} onOpenChange={setPowerupsOpen} />
+        <PowerupStrip
+          open={powerupsOpen}
+          onOpenChange={setPowerupsOpen}
+          onPick={pickPowerup}
+        />
       </div>
 
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -509,7 +561,11 @@ export function LiveBoard({ initial }: { initial: Board }) {
       </section>
 
       <div data-powerups className="mt-8 scroll-mt-24 md:hidden">
-        <PowerupStrip open={powerupsOpen} onOpenChange={setPowerupsOpen} />
+        <PowerupStrip
+          open={powerupsOpen}
+          onOpenChange={setPowerupsOpen}
+          onPick={pickPowerup}
+        />
       </div>
 
       <PowerupShowcase onPick={pickPowerup} />
@@ -613,6 +669,51 @@ export function LiveBoard({ initial }: { initial: Board }) {
         </Link>
       </section>
 
+      </main>
+
+      <aside className="hidden w-[210px] flex-none pt-24 xl:block">
+        <div className="sticky top-6 space-y-3">
+          <RailHeading>Buy an edge</RailHeading>
+          {POWERUP_LIST.slice(0, 4).map((p) => (
+            <button
+              key={p.kind}
+              type="button"
+              onClick={() => pickPowerup(p.kind)}
+              className="group relative flex w-full items-center gap-2 overflow-hidden rounded-xl border bg-panel p-[10px] text-left transition-transform duration-200 hover:-translate-y-[2px]"
+              style={{ borderColor: `${p.accent}40` }}
+            >
+              <span
+                aria-hidden="true"
+                className="pu-glow pointer-events-none absolute -left-6 top-1/2 h-16 w-16 -translate-y-1/2 rounded-full blur-2xl"
+                style={{ background: p.accent }}
+              />
+              <span
+                className="relative flex h-8 w-8 flex-none items-center justify-center rounded-lg text-white transition-transform group-hover:scale-110"
+                style={{
+                  background: `linear-gradient(140deg, ${p.accent}, ${p.accentTo})`,
+                }}
+              >
+                <PowerupIcon kind={p.kind} size={15} />
+              </span>
+              <span className="relative min-w-0 flex-1">
+                <span className="block truncate text-[12px] font-semibold">
+                  {p.name}
+                </span>
+                <span className="block truncate text-[10.5px] text-ink-soft">
+                  {p.hook}
+                </span>
+              </span>
+              <span
+                className="num relative flex-none text-[11.5px] font-semibold"
+                style={{ color: p.accent }}
+              >
+                {formatCents(p.priceCents)}
+              </span>
+            </button>
+          ))}
+        </div>
+      </aside>
+
       <PowerupPopup onPick={pickPowerup} />
 
       <BidModal
@@ -638,7 +739,15 @@ export function LiveBoard({ initial }: { initial: Board }) {
         submitting={submitting}
         error={error}
       />
-    </main>
+    </div>
+  );
+}
+
+function RailHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="px-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-ink-faint">
+      {children}
+    </h2>
   );
 }
 

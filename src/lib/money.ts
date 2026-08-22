@@ -38,3 +38,23 @@ export function costToPass(targetCents: number, yourCurrentCents = 0): number {
   const needed = targetCents - yourCurrentCents + 1;
   return Math.max(Math.ceil(needed / 100) * 100, MIN_BID_CENTS);
 }
+
+/**
+ * What passing this entry actually costs, taking a live Siege into account.
+ * Kept next to costToPass so the two can never drift apart.
+ */
+export function costToPassWith(
+  targetCents: number,
+  activePowerups: string[] = [],
+  yourCurrentCents = 0,
+): number {
+  const base = costToPass(targetCents, yourCurrentCents);
+  if (!activePowerups.includes("siege")) return base;
+  const margin = base - targetCents;
+  return targetCents + margin * 2;
+}
+
+/** Smoke Screen hides the number without hiding the entry. */
+export function isHidden(activePowerups: string[] = []): boolean {
+  return activePowerups.includes("smoke_screen");
+}

@@ -5,6 +5,7 @@ import { ImageResponse } from "next/og";
 import { brandGradient } from "@/lib/brand";
 import { getBoardSafe, type BoardRow } from "@/lib/leaderboard";
 import { MIN_BID_CENTS, formatCents } from "@/lib/money";
+import { POWERUP_LIST } from "@/lib/powerups";
 
 export const runtime = "nodejs";
 export const alt = "cheapseat.lol";
@@ -100,7 +101,7 @@ export default async function Image() {
           style={{
             display: "flex",
             fontFamily: "IBM Plex Mono",
-            fontSize: 132,
+            fontSize: 116,
             lineHeight: 1,
             letterSpacing: "-0.05em",
             color: GAIN,
@@ -176,8 +177,8 @@ export default async function Image() {
         <div
           style={{
             display: "flex",
-            marginTop: 22,
-            padding: "13px 34px",
+            marginTop: 18,
+            padding: "12px 32px",
             borderRadius: 999,
             background: INK,
             color: GROUND,
@@ -191,8 +192,8 @@ export default async function Image() {
         <div
           style={{
             display: "flex",
-            gap: 34,
-            marginTop: 22,
+            gap: 30,
+            marginTop: 18,
             fontSize: 25,
             color: INK_SOFT,
           }}
@@ -213,13 +214,58 @@ export default async function Image() {
         <div
           style={{
             display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginTop: 26,
+          }}
+        >
+          {POWERUP_LIST.slice(0, 5).map((p) => (
+            <span
+              key={p.kind}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "7px 14px",
+                borderRadius: 999,
+                background: `${p.accent}1A`,
+                border: `1px solid ${p.accent}66`,
+                fontSize: 18,
+                color: INK,
+              }}
+            >
+              <span
+                style={{
+                  display: "flex",
+                  width: 10,
+                  height: 10,
+                  borderRadius: 999,
+                  background: p.accent,
+                }}
+              />
+              {p.name}
+              <span
+                style={{
+                  fontFamily: "IBM Plex Mono",
+                  color: p.accent,
+                }}
+              >
+                {formatCents(p.priceCents)}
+              </span>
+            </span>
+          ))}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
             gap: 12,
-            marginTop: 30,
-            fontSize: 23,
+            marginTop: 18,
+            fontSize: 21,
             color: INK_FAINT,
           }}
         >
-          <span>New seats start at $1</span>
+          <span>Power-ups</span>
           <span>&middot;</span>
           <span>Bids stack</span>
           <span>&middot;</span>

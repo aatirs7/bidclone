@@ -3,7 +3,12 @@
 import Link from "next/link";
 
 import type { BoardRow } from "@/lib/leaderboard";
-import { costToPass, formatCents, formatCount } from "@/lib/money";
+import {
+  costToPassWith,
+  formatCents,
+  formatCount,
+  isHidden,
+} from "@/lib/money";
 import { formatAgo } from "@/lib/time";
 import { brandGradient } from "@/lib/brand";
 import { PowerupBadges } from "./powerup-badges";
@@ -28,7 +33,8 @@ export function BoardEntry({
   onTake: (cents: number) => void;
   dethroned: boolean;
 }) {
-  const cost = costToPass(row.totalCents);
+  const cost = costToPassWith(row.totalCents, row.activePowerups);
+  const hidden = isHidden(row.activePowerups);
 
   return (
     <article
@@ -78,7 +84,13 @@ export function BoardEntry({
 
       <div className="flex flex-none flex-col items-center gap-[6px]">
         <div className="num text-center text-[18px] font-semibold tracking-[-0.025em] sm:text-[20px]">
-          <Money cents={row.totalCents} />
+          {hidden ? (
+            <span className="text-ink-faint" title="Hidden by Smoke Screen">
+              $&bull;&bull;&bull;
+            </span>
+          ) : (
+            <Money cents={row.totalCents} />
+          )}
         </div>
         <button
           type="button"

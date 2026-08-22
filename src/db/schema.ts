@@ -135,6 +135,8 @@ export const powerupKind = pgEnum("powerup_kind", [
   "challenge",
   "last_stand",
   "spotlight",
+  "smoke_screen",
+  "siege",
 ]);
 
 export const powerups = pgTable(

@@ -27,6 +27,22 @@ const PATHS: Record<PowerupKind, React.ReactNode> = {
       <path d="M9 12l2.5 2.5L16 10" />
     </>
   ),
+  // Cloud drawn over a hidden figure.
+  smoke_screen: (
+    <>
+      <path d="M3 15.5h13a3.5 3.5 0 0 0 0-7 5 5 0 0 0-9.6-1.4A3.5 3.5 0 0 0 3 13.5" />
+      <path d="M6 19h12" />
+      <path d="M9.5 11.5l5 3" />
+    </>
+  ),
+  // A wall with a raised gate.
+  siege: (
+    <>
+      <path d="M3 21V9l3-2 3 2 3-2 3 2 3-2 3 2v12" />
+      <path d="M3 13h18" />
+      <path d="M10 21v-4a2 2 0 1 1 4 0v4" />
+    </>
+  ),
   // A beam widening onto the row.
   spotlight: (
     <>
