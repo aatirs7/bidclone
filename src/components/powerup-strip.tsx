@@ -49,9 +49,13 @@ export function PowerupStrip({
             <span
               key={p.kind}
               title={p.tease}
-              className="flex items-center gap-[6px] rounded-full border border-rule px-[10px] py-[4px] text-[12.5px] font-medium text-ink transition-colors hover:border-ink/40"
+              className="flex items-center gap-[6px] rounded-full border px-[10px] py-[4px] text-[12.5px] font-medium text-ink transition-colors"
+              style={{
+                borderColor: `${p.accent}55`,
+                background: `${p.accent}10`,
+              }}
             >
-              <PowerupIcon kind={p.kind} className="text-ink-soft" />
+              <PowerupIcon kind={p.kind} style={{ color: p.accent }} />
               {p.name}
               <span className="num font-semibold text-gain">
                 {formatCents(p.priceCents)}

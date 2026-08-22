@@ -41,10 +41,12 @@ export function PowerupIcon({
   kind,
   size = 15,
   className = "",
+  style,
 }: {
   kind: PowerupKind;
   size?: number;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   return (
     <svg
@@ -58,6 +60,7 @@ export function PowerupIcon({
       strokeLinejoin="round"
       aria-hidden="true"
       className={className}
+      style={style}
     >
       {PATHS[kind]}
     </svg>

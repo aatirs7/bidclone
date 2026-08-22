@@ -11,6 +11,15 @@ export type PowerupKind =
 export type PowerupSpec = {
   kind: PowerupKind;
   name: string;
+  /**
+   * Power-ups are the one part of the site allowed to carry colour. The board
+   * stays institutional; the game layer gets to look like a game.
+   */
+  accent: string;
+  /** Two stop gradient for washes and glows. */
+  accentTo: string;
+  /** Short shout for promos and popups. */
+  hook: string;
   /** One line summary for the pill. The blurb is the full explanation. */
   tease: string;
   priceCents: number;
@@ -26,6 +35,9 @@ export const POWERUPS: Record<PowerupKind, PowerupSpec> = {
   seat_lock: {
     kind: "seat_lock",
     name: "Seat Lock",
+    accent: "#C98A1B",
+    accentTo: "#E0B44A",
+    hook: "Freeze the board",
     tease: "5 minutes nobody can pass you",
     priceCents: 500,
     durationMs: 5 * 60_000,
@@ -37,6 +49,9 @@ export const POWERUPS: Record<PowerupKind, PowerupSpec> = {
   challenge: {
     kind: "challenge",
     name: "Challenge",
+    accent: "#C0392B",
+    accentTo: "#E0654F",
+    hook: "Name your target",
     tease: "Call somebody out in public",
     priceCents: 200,
     durationMs: 24 * 3_600_000,
@@ -48,6 +63,9 @@ export const POWERUPS: Record<PowerupKind, PowerupSpec> = {
   last_stand: {
     kind: "last_stand",
     name: "Last Stand",
+    accent: "#2E6BC6",
+    accentTo: "#5B9BE8",
+    hook: "Never lose it quietly",
     tease: "Lose the seat, get it back",
     priceCents: 1_000,
     durationMs: 3_600_000,
@@ -59,6 +77,9 @@ export const POWERUPS: Record<PowerupKind, PowerupSpec> = {
   spotlight: {
     kind: "spotlight",
     name: "Spotlight",
+    accent: "#7C5CBF",
+    accentTo: "#A98BE0",
+    hook: "Impossible to miss",
     tease: "An hour of being impossible to miss",
     priceCents: 300,
     durationMs: 3_600_000,

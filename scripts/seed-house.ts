@@ -53,7 +53,7 @@ const HOUSE = [
   ],
   ["elysiumbuilds.dev", 250, 16, "https://elysiumbuilds.dev/apple-icon.png"],
   ["mentorreach.com", 150, 14, "https://mentorreach.com/icon.png"],
-  ["accshopp.com", 100, 7, "https://accshopp.com/favicon.ico"],
+  ["accshopp.com", 100, 86, "https://accshopp.com/favicon.ico"],
 ] as const;
 
 async function clear() {

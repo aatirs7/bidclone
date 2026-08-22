@@ -16,9 +16,12 @@ import { brandGradient } from "@/lib/brand";
 import { ordinal } from "@/lib/ordinal";
 import { PowerupIcon } from "./powerup-icon";
 import { BidModal } from "./bid-modal";
-import { type PowerupKind } from "@/lib/powerups";
+import { isPowerupKind, type PowerupKind } from "@/lib/powerups";
 import { Champion } from "./champion";
 import { PowerupStrip } from "./powerup-strip";
+import { PowerupShowcase } from "./powerup-showcase";
+import { PowerupPromo } from "./powerup-promo";
+import { PowerupPopup } from "./powerup-popup";
 import { BoardEntry } from "./row";
 
 const POLL_MS = 10_000;
@@ -162,6 +165,19 @@ export function LiveBoard({ initial }: { initial: Board }) {
     setOverride(clampBid(cents));
     setChooserOpen(true);
   }, []);
+
+  /** Promos, popup and showcase all funnel into the bid modal preselected. */
+  const pickPowerup = useCallback(
+    (kind: string) => {
+      if (!isPowerupKind(kind)) return;
+      setChosen((current) =>
+        current.includes(kind) ? current : [...current, kind],
+      );
+      setOverride((current) => current ?? board.seatPriceCents);
+      setChooserOpen(true);
+    },
+    [board.seatPriceCents],
+  );
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -445,6 +461,11 @@ export function LiveBoard({ initial }: { initial: Board }) {
         <PowerupStrip open={powerupsOpen} onOpenChange={setPowerupsOpen} />
       </div>
 
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <PowerupPromo kind="seat_lock" onPick={pickPowerup} />
+        <PowerupPromo kind="spotlight" onPick={pickPowerup} />
+      </div>
+
       <section id="board" className="scroll-mt-20 pt-6">
         <h2 className="ledger-heading mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
           <span className="whitespace-nowrap">
@@ -489,6 +510,13 @@ export function LiveBoard({ initial }: { initial: Board }) {
 
       <div data-powerups className="mt-8 scroll-mt-24 md:hidden">
         <PowerupStrip open={powerupsOpen} onOpenChange={setPowerupsOpen} />
+      </div>
+
+      <PowerupShowcase onPick={pickPowerup} />
+
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <PowerupPromo kind="challenge" onPick={pickPowerup} />
+        <PowerupPromo kind="last_stand" onPick={pickPowerup} />
       </div>
 
       <section className="mt-12 grid grid-cols-1 gap-x-10 gap-y-8 border-t border-rule pt-8 md:grid-cols-2">
@@ -584,6 +612,8 @@ export function LiveBoard({ initial }: { initial: Board }) {
           )}
         </Link>
       </section>
+
+      <PowerupPopup onPick={pickPowerup} />
 
       <BidModal
         open={chooserOpen}

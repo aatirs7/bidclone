@@ -21,7 +21,11 @@ export function PowerupBadges({
         <span
           key={kind}
           title={POWERUPS[kind].blurb}
-          className="flex items-center gap-[4px] rounded-full border border-gain/35 bg-gain-wash px-[7px] py-[2px] text-[10.5px] font-semibold uppercase tracking-[0.06em] text-gain"
+          className="pu-live relative flex items-center gap-[4px] rounded-full px-[8px] py-[2px] text-[10.5px] font-semibold uppercase tracking-[0.06em] text-white"
+          style={{
+            background: `linear-gradient(120deg, ${POWERUPS[kind].accent}, ${POWERUPS[kind].accentTo})`,
+            color: "#fff",
+          }}
         >
           <PowerupIcon kind={kind} size={11} />
           {POWERUPS[kind].name}

@@ -1,7 +1,10 @@
 import { createHash } from "node:crypto";
 import { sql } from "drizzle-orm";
 
+import { after } from "next/server";
+
 import { db } from "@/db";
+import { applyHourlyBoost } from "@/lib/boost";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,5 +34,17 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("[pulse] failed", error);
   }
+
+  // House clicks on the current leader, at most once an hour. After the
+  // response, so presence never waits on it.
+  after(async () => {
+    try {
+      const added = await applyHourlyBoost();
+      if (added > 0) console.log("[boost] added", added, "to the leader");
+    } catch (error) {
+      console.error("[boost] failed", error);
+    }
+  });
+
   return new Response(null, { status: 204 });
 }

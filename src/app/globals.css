@@ -413,3 +413,88 @@ body > * {
 .field-flash {
   animation: field-flash 0.9s ease-out;
 }
+
+/* ── The game layer ───────────────────────────────────────────────────────
+   Power-ups are the only place on the site allowed to be loud. Everything
+   here is decoration and all of it stops under prefers-reduced-motion, which
+   the block earlier in this file enforces globally. */
+
+@keyframes pu-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pu-glow {
+  0%,
+  100% {
+    opacity: 0.16;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.34;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes pu-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pu-pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pu-ring {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 0.5;
+  }
+  100% {
+    box-shadow: 0 0 0 10px currentColor;
+    opacity: 0;
+  }
+}
+
+.pu-float {
+  animation: pu-float 3.4s ease-in-out infinite;
+}
+
+.pu-glow {
+  animation: pu-glow 3s ease-in-out infinite;
+}
+
+.pu-pop-in {
+  animation: pu-pop-in 0.34s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* A live power-up on a row pulses so it reads as running, not decorative. */
+.pu-live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  animation: pu-ring 1.9s ease-out infinite;
+  pointer-events: none;
+}
+
+.pu-shimmer {
+  background-size: 200% 100%;
+  animation: pu-shimmer 3.2s linear infinite;
+}
